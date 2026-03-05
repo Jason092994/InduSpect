@@ -30,7 +30,7 @@
   - **步驟 4**: 檢測記錄自動儲存，支援報告生成
 
 - **核心服務層** ⚙️
-  - Gemini AI 圖像分析服務（gemini-3-flash-preview）
+  - Gemini AI 圖像分析服務（gemini-3.0-flash）
   - 本地持久化存儲（SharedPreferences）
   - 圖片處理與壓縮（支援 JPEG/PNG）
   - 自動資料儲存機制（分析完成立即保存）
@@ -211,8 +211,8 @@ flutter_app/
 
 使用 Google Gemini API 進行圖像分析，遵循 `aimodel.md` 中定義的 Prompt 工程策略：
 
-- **gemini-3-flash-preview**: 用於快速圖像分析
-- **gemini-3-pro-preview**: 用於高質量報告生成
+- **gemini-3.0-flash**: 用於快速圖像分析
+- **gemini-3.0-pro**: 用於高質量報告生成
 
 示例：
 

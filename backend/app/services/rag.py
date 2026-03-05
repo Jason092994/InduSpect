@@ -136,7 +136,7 @@ class RAGService:
         
         try:
             genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel('gemini-2.0-flash')
+            model = genai.GenerativeModel(settings.gemini_flash_model)
             
             cases_text = "\n\n".join([
                 f"案例 {i+1} (相似度: {c['similarity']}):\n{c['content']}"
@@ -229,8 +229,8 @@ class RAGService:
         try:
             logger.info(f"Processing document: {source_filename}")
             genai.configure(api_key=settings.gemini_api_key)
-            # 使用 1.5 Flash，支援文件分析且速度快
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # 使用 Flash 模型進行文件分析（速度快）
+            model = genai.GenerativeModel(settings.gemini_doc_model)
 
             # 1. 上傳檔案到 Gemini
             logger.info(f"Uploading to Gemini...")
