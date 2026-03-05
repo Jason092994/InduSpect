@@ -212,7 +212,7 @@ flutter_app/
 使用 Google Gemini API 進行圖像分析，遵循 `aimodel.md` 中定義的 Prompt 工程策略：
 
 - **gemini-3-flash-preview**: 用於快速圖像分析
-- **gemini-3-pro-preview**: 用於高質量報告生成
+- **gemini-3.1-pro-preview**: 用於高質量報告生成
 
 示例：
 

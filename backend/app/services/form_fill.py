@@ -452,7 +452,7 @@ class FormFillService:
             results_summary.append(item)
 
         try:
-            model = genai.GenerativeModel('gemini-2.0-flash')
+            model = genai.GenerativeModel(settings.gemini_flash_model)
 
             prompt = f"""你是一位工業定檢表單自動填寫專家。請將 AI 檢查結果映射到定檢表格欄位。
 
@@ -1058,7 +1058,7 @@ class FormFillService:
     ) -> dict[str, str]:
         """使用 AI 建議欄位對應"""
         try:
-            model = genai.GenerativeModel('gemini-2.0-flash')
+            model = genai.GenerativeModel(settings.gemini_flash_model)
 
             fields_text = "\n".join([
                 f"- {f['field_id']}: {f['field_name']} ({f['field_type']})"
