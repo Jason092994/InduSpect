@@ -21,9 +21,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
 
     # Gemini 模型設定（可透過環境變數覆蓋，方便模型升級）
-    gemini_flash_model: str = "gemini-3.0-flash"   # 快速分析用
-    gemini_pro_model: str = "gemini-3.0-pro"       # 高複雜度推理用
-    gemini_doc_model: str = "gemini-3.0-flash"     # 文件分析用
+    gemini_flash_model: str = "gemini-3-flash-preview"    # 快速分析用
+    gemini_pro_model: str = "gemini-3.1-pro-preview"     # 高複雜度推理用
+    gemini_doc_model: str = "gemini-3-flash-preview"     # 文件分析用
 
     # Embedding 設定
     embedding_provider: str = "gemini"  # "gemini" or "openai"
