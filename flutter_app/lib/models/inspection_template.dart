@@ -109,6 +109,38 @@ class TemplateSection {
   }
 }
 
+/// 原始文件來源資訊（從真實表單建立模板時綁定）
+class SourceFileInfo {
+  final String fileName;
+  final String fileType;
+  final List<Map<String, dynamic>>? fieldMap;
+
+  SourceFileInfo({
+    required this.fileName,
+    required this.fileType,
+    this.fieldMap,
+  });
+
+  factory SourceFileInfo.fromJson(Map<String, dynamic> json) {
+    return SourceFileInfo(
+      fileName: json['file_name'] ?? '',
+      fileType: json['file_type'] ?? '',
+      fieldMap: json['field_map'] != null
+          ? List<Map<String, dynamic>>.from(
+              (json['field_map'] as List).map((e) => Map<String, dynamic>.from(e)))
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'file_name': fileName,
+      'file_type': fileType,
+      if (fieldMap != null) 'field_map': fieldMap,
+    };
+  }
+}
+
 /// 檢測模板
 class InspectionTemplate {
   final String templateId;
@@ -119,6 +151,7 @@ class InspectionTemplate {
   final DateTime updatedAt;
   final TemplateMetadata metadata;
   final List<TemplateSection> sections;
+  final SourceFileInfo? sourceFile;
 
   InspectionTemplate({
     required this.templateId,
@@ -129,7 +162,11 @@ class InspectionTemplate {
     required this.updatedAt,
     required this.metadata,
     required this.sections,
+    this.sourceFile,
   });
+
+  /// 此模板是否來自真實表單（而非手動建立的展示模板）
+  bool get isFromRealForm => sourceFile != null;
 
   factory InspectionTemplate.fromJson(Map<String, dynamic> json) {
     return InspectionTemplate(
@@ -145,6 +182,9 @@ class InspectionTemplate {
               .map((s) => TemplateSection.fromJson(s))
               .toList()
           : [],
+      sourceFile: json['source_file'] != null
+          ? SourceFileInfo.fromJson(json['source_file'])
+          : null,
     );
   }
 
@@ -158,6 +198,7 @@ class InspectionTemplate {
       'updated_at': updatedAt.toIso8601String(),
       'metadata': metadata.toJson(),
       'sections': sections.map((s) => s.toJson()).toList(),
+      if (sourceFile != null) 'source_file': sourceFile!.toJson(),
     };
   }
 

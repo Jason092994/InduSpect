@@ -1,0 +1,1576 @@
+{
+  "template_id": "TEMP-B3F00A19",
+  "template_name": "電氣設備定期檢查表",
+  "template_version": "1.0",
+  "category": "電氣設備",
+  "created_at": "2026-03-06T11:59:33.868082",
+  "updated_at": "2026-03-06T11:59:33.868082",
+  "metadata": {
+    "company": "國立臺北科技大學",
+    "department": "環安中心",
+    "inspection_cycle_days": 30,
+    "estimated_duration_minutes": 88,
+    "required_tools": [
+      "相機"
+    ]
+  },
+  "sections": [
+    {
+      "section_id": "basic_info",
+      "section_title": "基本資訊",
+      "section_order": 1,
+      "description": "設備基本資料與檢測資訊",
+      "fields": [
+        {
+          "field_id": "excel_電氣設備定期檢查表_A2",
+          "field_type": "text",
+          "label": "表單編號：EI-2024-",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_D2",
+          "field_type": "text",
+          "label": "檢查週期：□每月 □每季 □每半年 □每年",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B4",
+          "field_type": "text",
+          "label": "設備名稱",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_E4",
+          "field_type": "text",
+          "label": "設備編號",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B5",
+          "field_type": "text",
+          "label": "設備位置",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_E6",
+          "field_type": "date",
+          "label": "安裝日期",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B7",
+          "field_type": "date",
+          "label": "檢查日期",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_E7",
+          "field_type": "text",
+          "label": "檢查人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B8",
+          "field_type": "text",
+          "label": "陪同人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_E8",
+          "field_type": "text",
+          "label": "天氣狀況",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_A39",
+          "field_type": "date",
+          "label": "預計改善完成日期：     年     月     日",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B42",
+          "field_type": "text",
+          "label": "檢查人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_A44",
+          "field_type": "date",
+          "label": "日期",
+          "required": false,
+          "ai_fillable": true
+        }
+      ]
+    },
+    {
+      "section_id": "inspection_items",
+      "section_title": "檢測項目",
+      "section_order": 2,
+      "description": "設備外觀與功能檢測",
+      "fields": [
+        {
+          "field_id": "excel_電氣設備定期檢查表_A1",
+          "field_type": "text",
+          "label": "國立臺北科技大學 電氣設備定期檢查表",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_D10",
+          "field_type": "radio",
+          "label": "正常",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_E10",
+          "field_type": "radio",
+          "label": "異常",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C12",
+          "field_type": "radio",
+          "label": "門鎖功能正常，可正常開關",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C15",
+          "field_type": "radio",
+          "label": "手動操作正常，跳脫功能正常",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B16",
+          "field_type": "text",
+          "label": "指示燈狀態",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C16",
+          "field_type": "radio",
+          "label": "各指示燈正常顯示",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C21",
+          "field_type": "radio",
+          "label": "端子鎖固正常，無鬆動變色",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C22",
+          "field_type": "radio",
+          "label": "散熱風扇運轉正常，通風口無阻塞",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B24",
+          "field_type": "text",
+          "label": "防護設備",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "inspection_photo",
+          "field_type": "photo",
+          "label": "檢測現場照片",
+          "required": false,
+          "ai_analyze": true
+        }
+      ]
+    },
+    {
+      "section_id": "measurements",
+      "section_title": "量測數據",
+      "section_order": 3,
+      "description": "各項量測數值與讀數",
+      "fields": [
+        {
+          "field_id": "excel_電氣設備定期檢查表_E5",
+          "field_type": "number",
+          "label": "額定電壓/電流",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B17",
+          "field_type": "number",
+          "label": "電壓量測",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C17",
+          "field_type": "number",
+          "label": "電壓值在額定範圍±10%內",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B18",
+          "field_type": "number",
+          "label": "電流量測",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C18",
+          "field_type": "number",
+          "label": "電流值未超過額定值",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B19",
+          "field_type": "number",
+          "label": "溫度檢測",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "°C"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C19",
+          "field_type": "number",
+          "label": "各接點溫度正常，無異常發熱",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ],
+          "unit": "°C"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C20",
+          "field_type": "number",
+          "label": "漏電電流<30mA",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_C24",
+          "field_type": "number",
+          "label": "絕緣手套、絕緣毯等防護設備齊全",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "MΩ"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B27",
+          "field_type": "number",
+          "label": "R相電壓",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B28",
+          "field_type": "number",
+          "label": "S相電壓",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B29",
+          "field_type": "number",
+          "label": "T相電壓",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "V"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B30",
+          "field_type": "number",
+          "label": "R相電流",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B31",
+          "field_type": "number",
+          "label": "S相電流",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_B32",
+          "field_type": "number",
+          "label": "T相電流",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "A"
+        },
+        {
+          "field_id": "measurement_photo",
+          "field_type": "photo",
+          "label": "量測儀表照片",
+          "required": false,
+          "ai_analyze": true
+        }
+      ]
+    },
+    {
+      "section_id": "conclusion",
+      "section_title": "綜合評估",
+      "section_order": 4,
+      "description": "檢測結論與簽名",
+      "fields": [
+        {
+          "field_id": "excel_電氣設備定期檢查表_A36",
+          "field_type": "radio",
+          "label": "綜合判定：□合格  □有條件合格  □不合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "excel_電氣設備定期檢查表_A37",
+          "field_type": "textarea",
+          "label": "改善建議",
+          "required": false,
+          "ai_fillable": false,
+          "rows": 3
+        },
+        {
+          "field_id": "notes",
+          "field_type": "textarea",
+          "label": "備註說明",
+          "required": false,
+          "ai_fillable": false,
+          "max_length": 500,
+          "rows": 4
+        },
+        {
+          "field_id": "inspector_signature",
+          "field_type": "signature",
+          "label": "檢測人員簽名",
+          "required": true,
+          "save_as_image": true
+        }
+      ]
+    }
+  ],
+  "source_file": {
+    "file_name": "電氣設備定期檢查表.xlsx",
+    "file_type": "xlsx",
+    "field_map": [
+      {
+        "field_id": "excel_電氣設備定期檢查表_A1",
+        "field_name": "國立臺北科技大學 電氣設備定期檢查表",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A1",
+          "row": 1,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B1",
+          "row": 1,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A1:G1",
+          "top_left": "A1",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A2",
+        "field_name": "表單編號：EI-2024-",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A2",
+          "row": 2,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B2",
+          "row": 2,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A2:C2",
+          "top_left": "A2",
+          "rows": 1,
+          "cols": 3
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_D2",
+        "field_name": "檢查週期：□每月 □每季 □每半年 □每年",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D2",
+          "row": 2,
+          "column": 4
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E2",
+          "row": 2,
+          "column": 5,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "D2:G2",
+          "top_left": "D2",
+          "rows": 1,
+          "cols": 4
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B4",
+        "field_name": "設備名稱",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B4",
+          "row": 4,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C4",
+          "row": 4,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E4",
+        "field_name": "設備編號",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E4",
+          "row": 4,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F4",
+          "row": 4,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B5",
+        "field_name": "設備位置",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B5",
+          "row": 5,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C5",
+          "row": 5,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E5",
+        "field_name": "額定電壓/電流",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E5",
+          "row": 5,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F5",
+          "row": 5,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E6",
+        "field_name": "安裝日期",
+        "field_type": "date",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E6",
+          "row": 6,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F6",
+          "row": 6,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B7",
+        "field_name": "檢查日期",
+        "field_type": "date",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B7",
+          "row": 7,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C7",
+          "row": 7,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E7",
+        "field_name": "檢查人員",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E7",
+          "row": 7,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F7",
+          "row": 7,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B8",
+        "field_name": "陪同人員",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B8",
+          "row": 8,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C8",
+          "row": 8,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E8",
+        "field_name": "天氣狀況",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E8",
+          "row": 8,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F8",
+          "row": 8,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A9",
+        "field_name": "二、檢查項目",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A9",
+          "row": 9,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B9",
+          "row": 9,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A9:G9",
+          "top_left": "A9",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B10",
+        "field_name": "檢查項目",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B10",
+          "row": 10,
+          "column": 2
+        },
+        "value_location": null,
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C10",
+        "field_name": "檢查標準",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C10",
+          "row": 10,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F10",
+          "row": 10,
+          "column": 6,
+          "direction": "right",
+          "offset": 3
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_D10",
+        "field_name": "正常",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D10",
+          "row": 10,
+          "column": 4
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F10",
+          "row": 10,
+          "column": 6,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_E10",
+        "field_name": "異常",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "E10",
+          "row": 10,
+          "column": 5
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "F10",
+          "row": 10,
+          "column": 6,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_G10",
+        "field_name": "備註/異常說明",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "G10",
+          "row": 10,
+          "column": 7
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "G11",
+          "row": 11,
+          "column": 7,
+          "direction": "below",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C12",
+        "field_name": "門鎖功能正常，可正常開關",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C12",
+          "row": 12,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D12",
+          "row": 12,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C15",
+        "field_name": "手動操作正常，跳脫功能正常",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C15",
+          "row": 15,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D15",
+          "row": 15,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B16",
+        "field_name": "指示燈狀態",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B16",
+          "row": 16,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D16",
+          "row": 16,
+          "column": 4,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C16",
+        "field_name": "各指示燈正常顯示",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C16",
+          "row": 16,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D16",
+          "row": 16,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B17",
+        "field_name": "電壓量測",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B17",
+          "row": 17,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D17",
+          "row": 17,
+          "column": 4,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C17",
+        "field_name": "電壓值在額定範圍±10%內",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C17",
+          "row": 17,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D17",
+          "row": 17,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B18",
+        "field_name": "電流量測",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B18",
+          "row": 18,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D18",
+          "row": 18,
+          "column": 4,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C18",
+        "field_name": "電流值未超過額定值",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C18",
+          "row": 18,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D18",
+          "row": 18,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B19",
+        "field_name": "溫度檢測",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B19",
+          "row": 19,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D19",
+          "row": 19,
+          "column": 4,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C19",
+        "field_name": "各接點溫度正常，無異常發熱",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C19",
+          "row": 19,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D19",
+          "row": 19,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C20",
+        "field_name": "漏電電流<30mA",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C20",
+          "row": 20,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D20",
+          "row": 20,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C21",
+        "field_name": "端子鎖固正常，無鬆動變色",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C21",
+          "row": 21,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D21",
+          "row": 21,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C22",
+        "field_name": "散熱風扇運轉正常，通風口無阻塞",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C22",
+          "row": 22,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D22",
+          "row": 22,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B24",
+        "field_name": "防護設備",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B24",
+          "row": 24,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D24",
+          "row": 24,
+          "column": 4,
+          "direction": "right",
+          "offset": 2
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C24",
+        "field_name": "絕緣手套、絕緣毯等防護設備齊全",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C24",
+          "row": 24,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D24",
+          "row": 24,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_C26",
+        "field_name": "量測位置",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C26",
+          "row": 26,
+          "column": 3
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "D26",
+          "row": 26,
+          "column": 4,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_G26",
+        "field_name": "判定",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "G26",
+          "row": 26,
+          "column": 7
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "G27",
+          "row": 27,
+          "column": 7,
+          "direction": "below",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B27",
+        "field_name": "R相電壓",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B27",
+          "row": 27,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C27",
+          "row": 27,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B28",
+        "field_name": "S相電壓",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B28",
+          "row": 28,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C28",
+          "row": 28,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B29",
+        "field_name": "T相電壓",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B29",
+          "row": 29,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C29",
+          "row": 29,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B30",
+        "field_name": "R相電流",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B30",
+          "row": 30,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C30",
+          "row": 30,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B31",
+        "field_name": "S相電流",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B31",
+          "row": 31,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C31",
+          "row": 31,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B32",
+        "field_name": "T相電流",
+        "field_type": "number",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B32",
+          "row": 32,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C32",
+          "row": 32,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A35",
+        "field_name": "四、綜合判定與建議",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A35",
+          "row": 35,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B35",
+          "row": 35,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A35:G35",
+          "top_left": "A35",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A36",
+        "field_name": "綜合判定：□合格  □有條件合格  □不合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A36",
+          "row": 36,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B36",
+          "row": 36,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A36:G36",
+          "top_left": "A36",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A37",
+        "field_name": "改善建議",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A37",
+          "row": 37,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B37",
+          "row": 37,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A37:G37",
+          "top_left": "A37",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A39",
+        "field_name": "預計改善完成日期：     年     月     日",
+        "field_type": "date",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A39",
+          "row": 39,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B39",
+          "row": 39,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": true,
+        "merge_info": {
+          "range": "A39:G39",
+          "top_left": "A39",
+          "rows": 1,
+          "cols": 7
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_B42",
+        "field_name": "檢查人員",
+        "field_type": "text",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B42",
+          "row": 42,
+          "column": 2
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "C42",
+          "row": 42,
+          "column": 3,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      },
+      {
+        "field_id": "excel_電氣設備定期檢查表_A44",
+        "field_name": "日期",
+        "field_type": "date",
+        "label_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "A44",
+          "row": 44,
+          "column": 1
+        },
+        "value_location": {
+          "sheet": "電氣設備定期檢查表",
+          "cell": "B44",
+          "row": 44,
+          "column": 2,
+          "direction": "right",
+          "offset": 1
+        },
+        "is_merged": false,
+        "merge_info": null,
+        "mapping": null
+      }
+    ]
+  }
+}

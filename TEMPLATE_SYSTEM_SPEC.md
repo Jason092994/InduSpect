@@ -79,6 +79,120 @@
 
 ---
 
+## 🔄 動態模板建立 (Dynamic Template Creation)
+
+> **新增於 v2.1** — 支援從真實 Excel/Word 定檢表自動建立 InspectionTemplate
+
+### 概述
+
+傳統流程需要手動定義模板 JSON，現在系統支援直接上傳真實的定檢表文件，透過 AI + 規則引擎自動分析文件結構並產生標準 `InspectionTemplate` JSON。
+
+### 架構流程
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                   動態模板建立 Pipeline                            │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  上傳 Excel/Word  ──>  深度結構分析  ──>  AI 轉換 (Gemini)       │
+│   定檢表文件           (field_map)        ↓ 失敗時               │
+│                                          ↓                       │
+│                                     Fallback 規則引擎            │
+│                                          ↓                       │
+│                                   InspectionTemplate JSON        │
+│                                     + source_file 綁定           │
+│                                                                    │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### API 端點
+
+```
+POST /api/templates/create-from-file
+```
+
+**請求**: `multipart/form-data`
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `file` | File | Excel (.xlsx) 或 Word (.docx) 檔案 |
+| `template_name` | string | 模板名稱 |
+| `category` | string | 設備類別 |
+| `company` | string | 公司名稱 |
+| `department` | string | 部門名稱 |
+
+**回應**:
+```json
+{
+  "success": true,
+  "template_id": "TEMP-XXXXXXXX",
+  "field_count": 44,
+  "section_count": 4,
+  "template": { ... }
+}
+```
+
+### 深度結構分析
+
+系統針對不同文件格式使用專門的分析器：
+
+#### Excel 分析 (`_deep_analyze_excel`)
+- 逐 Sheet 掃描每個 Cell
+- 辨識合併儲存格、框線、資料驗證
+- 產出 `field_map`：每個欄位含 `field_name`, `field_type`, `label_location` (Sheet/Cell 座標)
+
+#### Word 分析 (`_deep_analyze_word`)
+- 分析段落 (paragraphs) 與表格 (tables)
+- 辨識標題層級、表格結構、空白填寫區
+- 產出 `field_map`：含 `label_location.type` (paragraph/table_row)
+
+### AI 轉換與 Fallback 機制
+
+#### 主路徑：Gemini AI
+- 將原始文字 + field_map 送給 Gemini，請求產出完整 InspectionTemplate JSON
+- **驗證邏輯**：AI 回傳的 JSON 必須包含非空的 `sections` 陣列，否則降級至 fallback
+
+#### Fallback 規則引擎
+當 AI 不可用或回傳無效結果時，系統使用智慧規則引擎：
+
+1. **欄位過濾**：排除區段標題 (如「一、外觀檢查」)、表頭文字、過長/過短文字
+2. **四區段分類**：
+   - **基本資訊** (`basic_info`)：日期、編號、名稱、地點等
+   - **檢測項目** (`inspection_items`)：檢查項目 + 合格/不合格 radio 選項
+   - **量測數據** (`measurements`)：數值欄位 + 自動偵測單位 (V, A, MΩ, °C 等)
+   - **綜合評估** (`conclusion`)：總體判定、改善建議、簽名
+3. **自動增強**：每個區段自動加入照片欄位
+
+### source_file 綁定
+
+產出的模板包含 `source_file` 欄位，記錄原始文件資訊：
+
+```json
+{
+  "source_file": {
+    "file_name": "電氣設備定期檢查表.xlsx",
+    "file_type": "excel",
+    "field_map": [
+      {
+        "field_name": "設備名稱",
+        "field_type": "text",
+        "label_location": { "sheet": "Sheet1", "cell": "A3" }
+      }
+    ]
+  }
+}
+```
+
+此綁定使得未來可將填寫完成的資料自動回填至原始 Excel/Word 文件。
+
+### Flutter 整合
+
+Flutter 端對應模型：
+- `SourceFileInfo` class (`inspection_template.dart`)
+- `InspectionTemplate.sourceFile` 欄位
+- `BackendApiService.createTemplateFromFile()` 呼叫後端 API
+
+---
+
 ## 🗂️ 模板系統設計
 
 ### 1. JSON 模板格式規範

@@ -78,6 +78,503 @@ class FormFillService:
             del self._templates[template_id]
 
     # ================================================================
+    # 動態模板建立（從真實表單自動產生 InspectionTemplate）
+    # ================================================================
+
+    async def create_template_from_file(
+        self,
+        file_content: bytes,
+        file_name: str,
+        template_name: str,
+        category: str = "一般設備",
+        company: str = "",
+        department: str = "",
+    ) -> dict:
+        """
+        從真實廠商 Excel/Word 表單自動建立 InspectionTemplate JSON
+
+        流程：
+        1. 深度分析表格結構 → 取得 field_map
+        2. 用 Gemini AI 將 field_map 轉換為 InspectionTemplate 格式
+           （含 sections 分組、field_type 推測、validation 規則等）
+        3. 儲存原始文件 + 產生的模板
+
+        Returns:
+            包含完整 InspectionTemplate JSON 的 dict
+        """
+        file_type = file_name.split('.')[-1].lower()
+
+        # Step 1: 深度分析表格結構
+        if file_type == 'xlsx':
+            field_map = await self._deep_analyze_excel(file_content)
+            raw_text = await self._extract_excel_text(file_content)
+        elif file_type == 'docx':
+            field_map = await self._deep_analyze_word(file_content)
+            raw_text = await self._extract_word_text(file_content)
+        else:
+            raise ValueError(f"不支援的檔案格式: {file_type}")
+
+        if not field_map:
+            raise ValueError("無法從檔案中識別出任何欄位，請確認檔案格式正確")
+
+        # Step 2: 用 AI 轉換為 InspectionTemplate 格式
+        template_json = await self._ai_convert_to_inspection_template(
+            field_map=field_map,
+            raw_text=raw_text,
+            template_name=template_name,
+            category=category,
+            company=company,
+            department=department,
+        )
+
+        # Step 3: 綁定原始文件資訊（供日後回填使用）
+        template_id = template_json.get("template_id", f"TEMP-{uuid.uuid4().hex[:8].upper()}")
+        template_json["template_id"] = template_id
+        template_json["source_file"] = {
+            "file_name": file_name,
+            "file_type": file_type,
+            "field_map": field_map,
+        }
+
+        # 在記憶體中保存原始文件（供日後回填）
+        self._templates[template_id] = {
+            "id": template_id,
+            "name": template_name,
+            "vendor_name": company,
+            "file_type": file_type,
+            "file_content": file_content,
+            "field_map": field_map,
+            "inspection_template": template_json,
+            "created_at": datetime.now().isoformat(),
+        }
+
+        return {
+            "success": True,
+            "template_id": template_id,
+            "template": template_json,
+            "field_count": sum(
+                len(s.get("fields", []))
+                for s in template_json.get("sections", [])
+            ),
+            "section_count": len(template_json.get("sections", [])),
+            "message": f"成功從 {file_name} 建立模板「{template_name}」",
+        }
+
+    async def _ai_convert_to_inspection_template(
+        self,
+        field_map: list[dict],
+        raw_text: str,
+        template_name: str,
+        category: str,
+        company: str,
+        department: str,
+    ) -> dict:
+        """
+        使用 Gemini AI 將分析出的欄位地圖轉換為完整的 InspectionTemplate JSON
+
+        AI 會：
+        - 將欄位分組為 sections（基本資訊、檢測項目、結論等）
+        - 推測每個欄位的 field_type（text/number/radio/checkbox/photo 等）
+        - 為選擇題生成 options
+        - 設定 validation 規則
+        - 判斷哪些欄位支援 AI 填入
+        """
+        # 準備欄位摘要
+        field_summary = []
+        for f in field_map:
+            field_summary.append({
+                "field_id": f["field_id"],
+                "field_name": f["field_name"],
+                "guessed_type": f.get("field_type", "text"),
+            })
+
+        try:
+            model = genai.GenerativeModel(settings.gemini_flash_model)
+
+            prompt = f"""你是一位工業定檢表單分析專家。請根據以下從真實定檢表格中擷取出的欄位資訊，
+建立一個完整的 InspectionTemplate JSON。
+
+【表單名稱】{template_name}
+【設備類別】{category}
+【公司名稱】{company}
+【部門】{department}
+
+【偵測到的欄位列表】
+{json.dumps(field_summary, ensure_ascii=False, indent=2)}
+
+【表格原始文字內容（前 2000 字）】
+{raw_text[:2000]}
+
+請產生一個完整的 InspectionTemplate JSON，格式要求如下：
+
+{{
+  "template_id": "TEMP-自動生成ID",
+  "template_name": "{template_name}",
+  "template_version": "1.0",
+  "category": "{category}",
+  "created_at": "{datetime.now().isoformat()}",
+  "updated_at": "{datetime.now().isoformat()}",
+  "metadata": {{
+    "company": "{company}",
+    "department": "{department}",
+    "inspection_cycle_days": 30,
+    "estimated_duration_minutes": 依表單複雜度估算,
+    "required_tools": ["相機"],
+    "safety_notes": "依表單內容判斷"
+  }},
+  "sections": [
+    {{
+      "section_id": "英文ID",
+      "section_title": "中文標題",
+      "section_order": 1,
+      "description": "簡短說明",
+      "fields": [
+        {{
+          "field_id": "使用原始 field_id 或語意化 ID",
+          "field_type": "text|number|radio|checkbox|dropdown|datetime|date|photo|textarea|signature",
+          "label": "欄位標籤",
+          "placeholder": "提示文字（可選）",
+          "required": true/false,
+          "ai_fillable": true/false,
+          "unit": "單位（可選，數值欄位用）",
+          "options": [只有 radio/checkbox/dropdown 才需要],
+          "validation": {{可選}},
+          "warning_threshold": {{可選，數值欄位用}}
+        }}
+      ]
+    }}
+  ]
+}}
+
+【重要規則】
+1. 將欄位合理分組為 sections：
+   - 基本資訊（設備名稱、編號、日期、人員等）
+   - 各類檢測項目（按邏輯分組）
+   - 綜合評估/結論
+2. field_type 判斷規則：
+   - 包含「日期」→ datetime 或 date
+   - 包含「溫度/壓力/電流/電壓/讀數」等量測值 → number（設定 unit 和 validation）
+   - 包含「是否/合格/正常/異常/判定」→ radio（提供 options）
+   - 包含「狀態/狀況/等級」→ radio 或 dropdown
+   - 包含「備註/說明/描述」→ textarea
+   - 包含「姓名/簽名」且在表尾 → signature
+   - 其他 → text
+3. 量測值欄位標記 ai_fillable: true
+4. 每個 section 至少包含一個照片欄位（field_type: "photo"），用於 AI 拍照辨識
+5. 最後的 section 應包含一個 signature 欄位
+6. options 格式: [{{"value": "英文值", "label": "中文標籤"}}]
+
+只回應 JSON，不要其他文字。"""
+
+            response = model.generate_content(prompt)
+
+            # 解析 JSON
+            json_match = re.search(r'\{[\s\S]*\}', response.text)
+            if json_match:
+                template_json = json.loads(json_match.group())
+                # 驗證 AI 回傳的 JSON 是否有效（至少包含 sections）
+                if template_json.get('sections') and len(template_json['sections']) > 0:
+                    return template_json
+                else:
+                    logger.warning("AI 回傳的模板 JSON 缺少 sections，使用 fallback")
+
+        except json.JSONDecodeError as e:
+            logger.error(f"AI 回應 JSON 解析失敗: {e}")
+        except Exception as e:
+            logger.error(f"AI 轉換模板失敗: {e}")
+
+        # Fallback: 如果 AI 失敗，用規則產生基本模板
+        return self._fallback_create_template(
+            field_map, template_name, category, company, department
+        )
+
+    def _is_section_header(self, text: str) -> bool:
+        """判斷文字是否為區段標題（而非可填入的欄位）"""
+        text = text.strip()
+        # 中文編號開頭的區段標題：一、二、三、... 或 （一）（二）...
+        if re.match(r'^[一二三四五六七八九十]+[、．.]', text):
+            return True
+        if re.match(r'^[（(][一二三四五六七八九十]+[）)]', text):
+            return True
+        # 表格標題列的表頭欄位
+        header_patterns = ['項次', '檢查項目', '檢查標準', '檢查要點', '量測項目',
+                           '量測位置', '判定', '備註/異常說明', '備註']
+        if text in header_patterns:
+            return True
+        return False
+
+    def _is_non_field_item(self, text: str) -> bool:
+        """判斷文字是否不應作為模板欄位（標題、表頭、注意事項等）"""
+        text = text.strip()
+        # 過長或過短的不太可能是欄位
+        if len(text) > 30 or len(text) < 2:
+            return True
+        # 區段標題
+        if self._is_section_header(text):
+            return True
+        # 常見非欄位文字
+        non_field_patterns = [
+            r'^注意事項',
+            r'^簽核$',
+            r'^\d+\.\s',  # 編號開頭的注意事項
+            r'^□',         # 勾選項目描述
+        ]
+        return any(re.match(p, text) for p in non_field_patterns)
+
+    def _fallback_create_template(
+        self,
+        field_map: list[dict],
+        template_name: str,
+        category: str,
+        company: str,
+        department: str,
+    ) -> dict:
+        """
+        AI 失敗時的 fallback：用規則將 field_map 轉換為基本 InspectionTemplate
+
+        策略：
+        1. 過濾掉標題、表頭等非欄位項目
+        2. 將欄位分為：基本資訊、檢測項目、量測數據
+        3. 為判定類欄位加上 radio options
+        4. 為量測數值欄位加上 unit/validation
+        """
+        now = datetime.now().isoformat()
+        template_id = f"TEMP-{uuid.uuid4().hex[:8].upper()}"
+
+        # 分類欄位
+        basic_fields = []
+        inspection_fields = []
+        measurement_fields = []
+        conclusion_fields = []
+
+        # 基本資訊關鍵字
+        basic_kw = ['名稱', '編號', '日期', '人員', '姓名', '位置', '地點',
+                     '廠商', '製造', '型號', '規格', '電話', '證照', '週期',
+                     '樓層', '區域', '天氣', '時間', '陪同']
+        # 量測數值關鍵字
+        measure_kw = ['電壓', '電流', '溫度', '壓力', '電阻', '絕緣', '頻率',
+                       '振動', '噪音', '轉速', '流量', '油位', '水位', '濕度',
+                       '功率', '相位', 'R相', 'S相', 'T相']
+        # 結論/評估關鍵字
+        conclusion_kw = ['綜合', '結論', '改善', '評估', '簽名', '簽核',
+                          '複查', '整體', '判定結果']
+
+        for f in field_map:
+            name = f["field_name"]
+
+            # 過濾非欄位項目
+            if self._is_non_field_item(name):
+                continue
+
+            # 建立欄位條目
+            field_type = f.get("field_type", "text")
+            field_entry = {
+                "field_id": f["field_id"],
+                "field_type": field_type,
+                "label": name,
+                "required": False,
+                "ai_fillable": field_type in ("number", "checkbox"),
+            }
+
+            # 判定類欄位 → radio
+            if any(kw in name for kw in ['合格', '判定', '正常', '異常']):
+                field_entry["field_type"] = "radio"
+                field_entry["options"] = [
+                    {"value": "normal", "label": "正常"},
+                    {"value": "abnormal", "label": "異常"},
+                    {"value": "na", "label": "不適用"},
+                ]
+
+            # 量測數值欄位 → number + unit
+            if field_type == "number" or any(kw in name for kw in measure_kw):
+                field_entry["field_type"] = "number"
+                field_entry["ai_fillable"] = True
+                # 嘗試從名稱推測單位
+                if '電壓' in name:
+                    field_entry["unit"] = "V"
+                elif '電流' in name:
+                    field_entry["unit"] = "A"
+                elif '電阻' in name:
+                    field_entry["unit"] = "Ω"
+                elif '絕緣' in name:
+                    field_entry["unit"] = "MΩ"
+                elif '溫度' in name:
+                    field_entry["unit"] = "°C"
+                elif '壓力' in name:
+                    field_entry["unit"] = "kPa"
+
+            # 日期欄位
+            if field_type == "date":
+                field_entry["field_type"] = "date"
+                field_entry["ai_fillable"] = True
+
+            # 備註/說明欄位 → textarea
+            if any(kw in name for kw in ['備註', '說明', '描述', '建議']):
+                field_entry["field_type"] = "textarea"
+                field_entry["rows"] = 3
+
+            # 分類到對應的 section
+            if any(kw in name for kw in basic_kw):
+                basic_fields.append(field_entry)
+            elif any(kw in name for kw in measure_kw):
+                measurement_fields.append(field_entry)
+            elif any(kw in name for kw in conclusion_kw):
+                conclusion_fields.append(field_entry)
+            else:
+                inspection_fields.append(field_entry)
+
+        # 構建 sections
+        sections = []
+        order = 1
+
+        if basic_fields:
+            sections.append({
+                "section_id": "basic_info",
+                "section_title": "基本資訊",
+                "section_order": order,
+                "description": "設備基本資料與檢測資訊",
+                "fields": basic_fields,
+            })
+            order += 1
+
+        if inspection_fields:
+            # 加入照片欄位供 AI 拍照辨識
+            inspection_fields.append({
+                "field_id": "inspection_photo",
+                "field_type": "photo",
+                "label": "檢測現場照片",
+                "required": False,
+                "ai_analyze": True,
+            })
+            sections.append({
+                "section_id": "inspection_items",
+                "section_title": "檢測項目",
+                "section_order": order,
+                "description": "設備外觀與功能檢測",
+                "fields": inspection_fields,
+            })
+            order += 1
+
+        if measurement_fields:
+            # 加入照片欄位供 AI 讀取儀表
+            measurement_fields.append({
+                "field_id": "measurement_photo",
+                "field_type": "photo",
+                "label": "量測儀表照片",
+                "required": False,
+                "ai_analyze": True,
+            })
+            sections.append({
+                "section_id": "measurements",
+                "section_title": "量測數據",
+                "section_order": order,
+                "description": "各項量測數值與讀數",
+                "fields": measurement_fields,
+            })
+            order += 1
+
+        # 結論區段（合併使用者的結論欄位 + 固定欄位）
+        conclusion_section_fields = list(conclusion_fields)
+        # 如果沒有整體判定，加上一個
+        has_overall = any('判定' in f.get('label', '') or '評估' in f.get('label', '')
+                          for f in conclusion_section_fields)
+        if not has_overall:
+            conclusion_section_fields.insert(0, {
+                "field_id": "overall_result",
+                "field_type": "radio",
+                "label": "整體判定",
+                "required": True,
+                "ai_fillable": False,
+                "options": [
+                    {"value": "pass", "label": "合格"},
+                    {"value": "fail", "label": "不合格"},
+                    {"value": "conditional", "label": "有條件通過"},
+                ],
+            })
+        # 加入備註（如果尚未有）
+        has_notes = any('備註' in f.get('label', '') for f in conclusion_section_fields)
+        if not has_notes:
+            conclusion_section_fields.append({
+                "field_id": "notes",
+                "field_type": "textarea",
+                "label": "備註說明",
+                "required": False,
+                "ai_fillable": False,
+                "max_length": 500,
+                "rows": 4,
+            })
+        # 加入簽名
+        conclusion_section_fields.append({
+            "field_id": "inspector_signature",
+            "field_type": "signature",
+            "label": "檢測人員簽名",
+            "required": True,
+            "save_as_image": True,
+        })
+
+        sections.append({
+            "section_id": "conclusion",
+            "section_title": "綜合評估",
+            "section_order": order,
+            "description": "檢測結論與簽名",
+            "fields": conclusion_section_fields,
+        })
+
+        total_fields = sum(len(s["fields"]) for s in sections)
+
+        return {
+            "template_id": template_id,
+            "template_name": template_name,
+            "template_version": "1.0",
+            "category": category,
+            "created_at": now,
+            "updated_at": now,
+            "metadata": {
+                "company": company,
+                "department": department,
+                "inspection_cycle_days": 30,
+                "estimated_duration_minutes": max(15, total_fields * 2),
+                "required_tools": ["相機"],
+            },
+            "sections": sections,
+        }
+
+    async def _extract_excel_text(self, content: bytes) -> str:
+        """擷取 Excel 的原始文字內容（用於 AI 分析上下文）"""
+        lines = []
+        wb = load_workbook(io.BytesIO(content))
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            lines.append(f"=== Sheet: {sheet_name} ===")
+            max_row = min(ws.max_row or 1, 100)
+            max_col = min(ws.max_column or 1, 30)
+            for row_idx in range(1, max_row + 1):
+                row_texts = []
+                for col_idx in range(1, max_col + 1):
+                    cell = ws.cell(row=row_idx, column=col_idx)
+                    if cell.value is not None:
+                        row_texts.append(str(cell.value).strip())
+                if row_texts:
+                    lines.append(" | ".join(row_texts))
+        return "\n".join(lines)
+
+    async def _extract_word_text(self, content: bytes) -> str:
+        """擷取 Word 的原始文字內容"""
+        lines = []
+        doc = Document(io.BytesIO(content))
+        for para in doc.paragraphs[:100]:
+            text = para.text.strip()
+            if text:
+                lines.append(text)
+        for table_idx, table in enumerate(doc.tables):
+            lines.append(f"=== 表格 {table_idx + 1} ===")
+            for row in table.rows:
+                row_texts = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if row_texts:
+                    lines.append(" | ".join(row_texts))
+        return "\n".join(lines)
+
+    # ================================================================
     # 模板分析（上傳時）
     # ================================================================
 
