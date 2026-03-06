@@ -82,6 +82,63 @@ async def get_template(template_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/create-from-file")
+async def create_template_from_file(
+    file: UploadFile = File(...),
+    template_name: str = Form(...),
+    category: str = Form("一般設備"),
+    company: str = Form(""),
+    department: str = Form(""),
+):
+    """
+    從真實廠商表單自動建立檢測模板
+
+    上傳 Excel/Word 定檢表格，AI 自動分析結構並產生
+    InspectionTemplate JSON，可直接用於 App 端引導式填寫。
+
+    流程：
+    1. 上傳真實表單 → AI 分析欄位結構
+    2. AI 自動分組、推測欄位類型、產生 sections/fields
+    3. 回傳完整 InspectionTemplate JSON + 原始文件綁定資訊
+    4. App 端儲存為永久模板，之後每次直接選用
+    """
+    try:
+        # 驗證檔案類型
+        allowed_types = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+        ]
+
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"不支援的檔案類型: {file.content_type}，請上傳 Excel 或 Word 檔案"
+            )
+
+        service = FormFillService()
+        content = await file.read()
+
+        result = await service.create_template_from_file(
+            file_content=content,
+            file_name=file.filename,
+            template_name=template_name,
+            category=category,
+            company=company,
+            department=department,
+        )
+
+        return result
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Create template from file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/upload", response_model=TemplateAnalyzeResponse)
 async def upload_and_analyze_template(
     file: UploadFile = File(...),

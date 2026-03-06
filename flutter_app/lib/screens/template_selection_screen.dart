@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../models/inspection_template.dart';
 import '../models/template_inspection_record.dart';
 import '../services/template_service.dart';
 import '../services/database_service.dart';
+import '../services/backend_api_service.dart';
 import '../utils/constants.dart';
 import 'template_filling_screen.dart';
 
@@ -261,22 +264,47 @@ class _TemplateSelectionScreenState extends State<TemplateSelectionScreen> {
                           style: AppTextStyles.heading3,
                         ),
                         const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            template.category,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue[700],
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                template.category,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
                             ),
-                          ),
+                            if (template.isFromRealForm) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[50],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  template.sourceFile!.fileType.toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
@@ -531,14 +559,35 @@ class _TemplateSelectionScreenState extends State<TemplateSelectionScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('匯入模板'),
+        title: const Text('建立 / 匯入模板'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 主要功能：從真實表單建立模板
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.primary, width: 2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 28),
+                title: const Text(
+                  '從定檢表單建立模板',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text('上傳 Excel/Word 表單，AI 自動建立模板'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _createTemplateFromVendorForm();
+                },
+              ),
+            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.file_upload, color: AppColors.primary),
-              title: const Text('從檔案匯入'),
-              subtitle: const Text('選擇 JSON 格式的模板檔案'),
+              title: const Text('從 JSON 檔案匯入'),
+              subtitle: const Text('選擇已有的 JSON 模板檔案'),
               onTap: () {
                 Navigator.pop(context);
                 _importFromFile();
@@ -553,15 +602,6 @@ class _TemplateSelectionScreenState extends State<TemplateSelectionScreen> {
                 _importFromText();
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_scanner, color: Colors.orange),
-              title: const Text('掃描 QR Code'),
-              subtitle: const Text('掃描模板分享的 QR Code'),
-              onTap: () {
-                Navigator.pop(context);
-                _importFromQRCode();
-              },
-            ),
           ],
         ),
         actions: [
@@ -574,11 +614,257 @@ class _TemplateSelectionScreenState extends State<TemplateSelectionScreen> {
     );
   }
 
-  Future<void> _importFromFile() async {
-    // TODO: 實作檔案選擇與匯入
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('檔案匯入功能開發中...')),
+  /// 從真實廠商表單自動建立模板（核心功能）
+  Future<void> _createTemplateFromVendorForm() async {
+    // Step 1: 選擇 Excel/Word 檔案
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls', 'docx'],
+      withData: true,
     );
+
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+
+    if (!mounted) return;
+
+    // Step 2: 填寫模板基本資訊
+    final nameController = TextEditingController(
+      text: file.name.replaceAll(RegExp(r'\.(xlsx|xls|docx)$'), ''),
+    );
+    final categoryController = TextEditingController(text: '一般設備');
+    final companyController = TextEditingController();
+    final departmentController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('模板基本資訊'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.description, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '檔案：${file.name}',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: '模板名稱 *',
+                  hintText: '例如：電機設備定期檢查表',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: categoryController,
+                decoration: const InputDecoration(
+                  labelText: '設備類別',
+                  hintText: '例如：電機設備、泵浦、閥門',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: companyController,
+                decoration: const InputDecoration(
+                  labelText: '公司名稱',
+                  hintText: '例如：台灣電力公司',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: departmentController,
+                decoration: const InputDecoration(
+                  labelText: '部門',
+                  hintText: '例如：維護部',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'AI 將自動分析表單結構，建立可重複使用的檢測模板',
+                        style: TextStyle(fontSize: 12, color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('開始建立'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final templateName = nameController.text.trim();
+    if (templateName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('請輸入模板名稱')),
+      );
+      return;
+    }
+
+    // Step 3: 顯示建立進度
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text('正在分析「${file.name}」...'),
+            const SizedBox(height: 8),
+            const Text(
+              'AI 正在識別表單欄位並建立模板',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Step 4: 呼叫後端 API
+      final api = BackendApiService();
+      final response = await api.createTemplateFromFile(
+        file: file,
+        templateName: templateName,
+        category: categoryController.text.trim().isEmpty
+            ? '一般設備'
+            : categoryController.text.trim(),
+        company: companyController.text.trim(),
+        department: departmentController.text.trim(),
+      );
+
+      // 關閉進度對話框
+      if (mounted) Navigator.pop(context);
+
+      if (response['success'] == true && response['template'] != null) {
+        // Step 5: 將 AI 產生的模板儲存到本地
+        final templateJson = json.encode(response['template']);
+        await _templateService.loadTemplateFromJson(templateJson);
+        await _loadTemplates();
+
+        if (mounted) {
+          final sectionCount = response['section_count'] ?? 0;
+          final fieldCount = response['field_count'] ?? 0;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '模板建立成功！$sectionCount 個區段、$fieldCount 個欄位',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('建立失敗：${response['error'] ?? '未知錯誤'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // 關閉進度對話框
+      if (mounted) Navigator.pop(context);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('建立失敗：$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _importFromFile() async {
+    // 選擇 JSON 模板檔案
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      withData: true, // 確保取得 bytes（跨平台相容）
+    );
+
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    if (file.bytes == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('無法讀取檔案內容')),
+        );
+      }
+      return;
+    }
+
+    final jsonString = utf8.decode(file.bytes!);
+
+    try {
+      await _templateService.loadTemplateFromJson(jsonString);
+      await _loadTemplates();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('模板匯入成功！')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('匯入失敗：$e')),
+        );
+      }
+    }
   }
 
   Future<void> _importFromText() async {
@@ -616,23 +902,16 @@ class _TemplateSelectionScreenState extends State<TemplateSelectionScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('✅ 模板匯入成功！')),
+            const SnackBar(content: Text('模板匯入成功！')),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('❌ 匯入失敗：$e')),
+            SnackBar(content: Text('匯入失敗：$e')),
           );
         }
       }
     }
-  }
-
-  Future<void> _importFromQRCode() async {
-    // TODO: 實作 QR Code 掃描
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('QR Code 掃描功能開發中...')),
-    );
   }
 }

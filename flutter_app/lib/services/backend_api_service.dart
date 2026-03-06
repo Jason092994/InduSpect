@@ -312,6 +312,65 @@ class BackendApiService {
     ));
   }
 
+  // ============ 動態模板建立 API ============
+
+  /// 從真實廠商表單自動建立檢測模板
+  ///
+  /// 上傳 Excel/Word 定檢表格，AI 自動分析結構並產生
+  /// InspectionTemplate JSON，可直接用於 App 端引導式填寫。
+  Future<Map<String, dynamic>> createTemplateFromFile({
+    required PlatformFile file,
+    required String templateName,
+    String category = '一般設備',
+    String company = '',
+    String department = '',
+  }) async {
+    if (!await _connectivity.checkConnection()) {
+      return {'success': false, 'error': '目前離線中，無法建立模板'};
+    }
+
+    try {
+      MultipartFile multipartFile;
+      if (file.path != null) {
+        multipartFile = await MultipartFile.fromFile(file.path!, filename: file.name);
+      } else if (file.bytes != null) {
+        multipartFile = MultipartFile.fromBytes(file.bytes!, filename: file.name);
+      } else {
+        return {'success': false, 'error': '無法讀取檔案內容'};
+      }
+
+      final formData = FormData.fromMap({
+        'file': multipartFile,
+        'template_name': templateName,
+        'category': category,
+        'company': company,
+        'department': department,
+      });
+
+      print('📋 Creating template from file: ${file.name}');
+
+      final response = await _dio.post(
+        '/api/templates/create-from-file',
+        data: formData,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 60), // AI 分析需要較長時間
+        ),
+      );
+
+      print('✅ Template created: ${response.data}');
+      return Map<String, dynamic>.from(response.data);
+    } on DioException catch (e) {
+      print('❌ Create template error: ${e.message}');
+      if (e.response != null) {
+        final detail = e.response?.data?['detail'] ?? e.message;
+        return {'success': false, 'error': detail};
+      }
+      return {'success': false, 'error': e.message};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   // ============ 自動回填 API ============
 
   /// 分析定檢文件結構（Excel/Word）
