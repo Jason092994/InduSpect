@@ -1,0 +1,1200 @@
+{
+  "template_id": "TEMP-CC6F288C",
+  "template_name": "消防安全設備定期檢查表",
+  "template_version": "1.0",
+  "category": "消防設備",
+  "created_at": "2026-03-06T11:59:34.009474",
+  "updated_at": "2026-03-06T11:59:34.009474",
+  "metadata": {
+    "company": "國立臺北科技大學",
+    "department": "環安中心",
+    "inspection_cycle_days": 30,
+    "estimated_duration_minutes": 68,
+    "required_tools": [
+      "相機"
+    ]
+  },
+  "sections": [
+    {
+      "section_id": "basic_info",
+      "section_title": "基本資訊",
+      "section_order": 1,
+      "description": "設備基本資料與檢測資訊",
+      "fields": [
+        {
+          "field_id": "word_para_1",
+          "field_type": "text",
+          "label": "表單編號",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t0_r1_c0",
+          "field_type": "date",
+          "label": "檢查日期",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "word_t0_r1_c2",
+          "field_type": "date",
+          "label": "檢查時間",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "word_t0_r2_c0",
+          "field_type": "text",
+          "label": "檢查人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t0_r3_c0",
+          "field_type": "text",
+          "label": "陪同人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t1_r1_c1",
+          "field_type": "text",
+          "label": "設置位置",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t4_r3_c0",
+          "field_type": "date",
+          "label": "預計改善日期",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "word_t4_r4_c0",
+          "field_type": "date",
+          "label": "複查日期",
+          "required": false,
+          "ai_fillable": true
+        },
+        {
+          "field_id": "word_t5_r0_c1",
+          "field_type": "text",
+          "label": "檢查人員",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t5_r2_c0",
+          "field_type": "date",
+          "label": "日期",
+          "required": false,
+          "ai_fillable": true
+        }
+      ]
+    },
+    {
+      "section_id": "inspection_items",
+      "section_title": "檢測項目",
+      "section_order": 2,
+      "description": "設備外觀與功能檢測",
+      "fields": [
+        {
+          "field_id": "word_para_0",
+          "field_type": "text",
+          "label": "國立臺北科技大學\n消防安全設備定期檢查紀錄表",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t0_r1_c3",
+          "field_type": "text",
+          "label": ":   ~",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "word_t1_r0_c3",
+          "field_type": "radio",
+          "label": "合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t1_r0_c4",
+          "field_type": "radio",
+          "label": "不合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t2_r0_c3",
+          "field_type": "radio",
+          "label": "合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t2_r0_c4",
+          "field_type": "radio",
+          "label": "不合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t2_r1_c2",
+          "field_type": "radio",
+          "label": "箱門開閉正常、玻璃完整",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t2_r5_c2",
+          "field_type": "radio",
+          "label": "標示燈正常亮起",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r0_c3",
+          "field_type": "radio",
+          "label": "合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r0_c4",
+          "field_type": "radio",
+          "label": "不合格",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r1_c2",
+          "field_type": "radio",
+          "label": "外觀正常、指示燈正常閃爍",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r2_c2",
+          "field_type": "radio",
+          "label": "外觀正常、無遮蔽物",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r3_c2",
+          "field_type": "radio",
+          "label": "按鈕正常、保護蓋完整",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r4_c2",
+          "field_type": "radio",
+          "label": "電源正常、無故障警示",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r5_c2",
+          "field_type": "radio",
+          "label": "音量足夠、動作正常",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t3_r6_c2",
+          "field_type": "radio",
+          "label": "播放正常、音量適當",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "word_t4_r1_c0",
+          "field_type": "radio",
+          "label": "不合格項目數",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ]
+        },
+        {
+          "field_id": "inspection_photo",
+          "field_type": "photo",
+          "label": "檢測現場照片",
+          "required": false,
+          "ai_analyze": true
+        }
+      ]
+    },
+    {
+      "section_id": "measurements",
+      "section_title": "量測數據",
+      "section_order": 3,
+      "description": "各項量測數值與讀數",
+      "fields": [
+        {
+          "field_id": "word_t1_r4_c1",
+          "field_type": "number",
+          "label": "壓力錶",
+          "required": false,
+          "ai_fillable": true,
+          "unit": "kPa"
+        },
+        {
+          "field_id": "word_t2_r6_c2",
+          "field_type": "number",
+          "label": "啟動正常、壓力正常",
+          "required": false,
+          "ai_fillable": true,
+          "options": [
+            {
+              "value": "normal",
+              "label": "正常"
+            },
+            {
+              "value": "abnormal",
+              "label": "異常"
+            },
+            {
+              "value": "na",
+              "label": "不適用"
+            }
+          ],
+          "unit": "kPa"
+        },
+        {
+          "field_id": "measurement_photo",
+          "field_type": "photo",
+          "label": "量測儀表照片",
+          "required": false,
+          "ai_analyze": true
+        }
+      ]
+    },
+    {
+      "section_id": "conclusion",
+      "section_title": "綜合評估",
+      "section_order": 4,
+      "description": "檢測結論與簽名",
+      "fields": [
+        {
+          "field_id": "word_t4_r0_c0",
+          "field_type": "text",
+          "label": "整體評估結果",
+          "required": false,
+          "ai_fillable": false
+        },
+        {
+          "field_id": "notes",
+          "field_type": "textarea",
+          "label": "備註說明",
+          "required": false,
+          "ai_fillable": false,
+          "max_length": 500,
+          "rows": 4
+        },
+        {
+          "field_id": "inspector_signature",
+          "field_type": "signature",
+          "label": "檢測人員簽名",
+          "required": true,
+          "save_as_image": true
+        }
+      ]
+    }
+  ],
+  "source_file": {
+    "file_name": "消防安全設備定期檢查表.docx",
+    "file_type": "docx",
+    "field_map": [
+      {
+        "field_id": "word_para_0",
+        "field_name": "國立臺北科技大學\n消防安全設備定期檢查紀錄表",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 0
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 0,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_1",
+        "field_name": "表單編號",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 1
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 1,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_4",
+        "field_name": "二、滅火器檢查",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 4
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 4,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_6",
+        "field_name": "三、室內消防栓檢查",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 6
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 6,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_8",
+        "field_name": "四、火災警報設備檢查",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 8
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 8,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_14",
+        "field_name": "注意事項",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 14
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 14,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_15",
+        "field_name": "1. 本表依據「各類場所消防安全設備設置標準」及「消防安全設備檢修及申報辦法」辦理。",
+        "field_type": "text",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 15
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 15,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_16",
+        "field_name": "2. 檢查頻率",
+        "field_type": "number",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 16
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 16,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_para_17",
+        "field_name": "3. 發現不合格項目應立即通報環安中心並限期改善。",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "paragraph",
+          "paragraph_index": 17
+        },
+        "value_location": {
+          "type": "paragraph",
+          "paragraph_index": 17,
+          "replace_pattern": "after_colon"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t0_r1_c0",
+        "field_name": "檢查日期",
+        "field_type": "date",
+        "label_location": {
+          "type": "table",
+          "table_index": 0,
+          "row_index": 1,
+          "cell_index": 0
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t0_r1_c2",
+        "field_name": "檢查時間",
+        "field_type": "date",
+        "label_location": {
+          "type": "table",
+          "table_index": 0,
+          "row_index": 1,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t0_r1_c3",
+        "field_name": ":   ~",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 0,
+          "row_index": 1,
+          "cell_index": 3
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 2,
+          "cell_index": 3,
+          "direction": "below"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t0_r2_c0",
+        "field_name": "檢查人員",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 0,
+          "row_index": 2,
+          "cell_index": 0
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 2,
+          "cell_index": 1,
+          "direction": "right"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t0_r3_c0",
+        "field_name": "陪同人員",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 0,
+          "row_index": 3,
+          "cell_index": 0
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 3,
+          "cell_index": 1,
+          "direction": "right"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r0_c1",
+        "field_name": "檢查項目",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 0,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r0_c2",
+        "field_name": "檢查要點",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 0,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r0_c3",
+        "field_name": "合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 0,
+          "cell_index": 3
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r0_c4",
+        "field_name": "不合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 0,
+          "cell_index": 4
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r0_c5",
+        "field_name": "備註",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 0,
+          "cell_index": 5
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 1,
+          "cell_index": 5,
+          "direction": "below"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r1_c1",
+        "field_name": "設置位置",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 1,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t1_r4_c1",
+        "field_name": "壓力錶",
+        "field_type": "number",
+        "label_location": {
+          "type": "table",
+          "table_index": 1,
+          "row_index": 4,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r0_c1",
+        "field_name": "檢查項目",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 0,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r0_c2",
+        "field_name": "檢查要點",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 0,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r0_c3",
+        "field_name": "合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 0,
+          "cell_index": 3
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r0_c4",
+        "field_name": "不合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 0,
+          "cell_index": 4
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r0_c5",
+        "field_name": "備註",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 0,
+          "cell_index": 5
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 1,
+          "cell_index": 5,
+          "direction": "below"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r1_c2",
+        "field_name": "箱門開閉正常、玻璃完整",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 1,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r5_c2",
+        "field_name": "標示燈正常亮起",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 5,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t2_r6_c2",
+        "field_name": "啟動正常、壓力正常",
+        "field_type": "number",
+        "label_location": {
+          "type": "table",
+          "table_index": 2,
+          "row_index": 6,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r0_c1",
+        "field_name": "檢查項目",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 0,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r0_c2",
+        "field_name": "檢查要點",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 0,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r0_c3",
+        "field_name": "合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 0,
+          "cell_index": 3
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r0_c4",
+        "field_name": "不合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 0,
+          "cell_index": 4
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r0_c5",
+        "field_name": "備註",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 0,
+          "cell_index": 5
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 1,
+          "cell_index": 5,
+          "direction": "below"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r1_c2",
+        "field_name": "外觀正常、指示燈正常閃爍",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 1,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r2_c2",
+        "field_name": "外觀正常、無遮蔽物",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 2,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r3_c2",
+        "field_name": "按鈕正常、保護蓋完整",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 3,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r4_c2",
+        "field_name": "電源正常、無故障警示",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 4,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r5_c2",
+        "field_name": "音量足夠、動作正常",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 5,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t3_r6_c2",
+        "field_name": "播放正常、音量適當",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 3,
+          "row_index": 6,
+          "cell_index": 2
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t4_r0_c0",
+        "field_name": "整體評估結果",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 4,
+          "row_index": 0,
+          "cell_index": 0
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t4_r0_c1",
+        "field_name": "□全部合格  □部分不合格  □嚴重不合格",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 4,
+          "row_index": 0,
+          "cell_index": 1
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t4_r1_c0",
+        "field_name": "不合格項目數",
+        "field_type": "checkbox",
+        "label_location": {
+          "type": "table",
+          "table_index": 4,
+          "row_index": 1,
+          "cell_index": 0
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t4_r3_c0",
+        "field_name": "預計改善日期",
+        "field_type": "date",
+        "label_location": {
+          "type": "table",
+          "table_index": 4,
+          "row_index": 3,
+          "cell_index": 0
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t4_r4_c0",
+        "field_name": "複查日期",
+        "field_type": "date",
+        "label_location": {
+          "type": "table",
+          "table_index": 4,
+          "row_index": 4,
+          "cell_index": 0
+        },
+        "value_location": null,
+        "mapping": null
+      },
+      {
+        "field_id": "word_t5_r0_c1",
+        "field_name": "檢查人員",
+        "field_type": "text",
+        "label_location": {
+          "type": "table",
+          "table_index": 5,
+          "row_index": 0,
+          "cell_index": 1
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 1,
+          "cell_index": 1,
+          "direction": "below"
+        },
+        "mapping": null
+      },
+      {
+        "field_id": "word_t5_r2_c0",
+        "field_name": "日期",
+        "field_type": "date",
+        "label_location": {
+          "type": "table",
+          "table_index": 5,
+          "row_index": 2,
+          "cell_index": 0
+        },
+        "value_location": {
+          "type": "table",
+          "table_index": null,
+          "row_index": 2,
+          "cell_index": 1,
+          "direction": "right"
+        },
+        "mapping": null
+      }
+    ]
+  }
+}
