@@ -1,0 +1,747 @@
+"""
+定檢法規標準值資料庫
+
+Sprint 3 Task 3.1: 覆蓋電氣、消防、機械、壓力容器四大類
+每項標準包含:
+- standard_id: 唯一識別碼
+- category: 大類 (electrical/fire/mechanical/pressure)
+- equipment_type: 適用設備類型
+- inspection_item: 檢查項目名稱
+- keywords: 模糊匹配關鍵字
+- unit: 量測單位
+- pass_condition: 比較方式 (gte/lte/range/eq/in_set)
+- pass_value: 合格閾值 (數值或 [min, max] 或 set)
+- warning_value: 警告閾值（接近不合格）
+- regulation: 法規依據
+- notes: 備註
+"""
+
+from typing import Optional
+
+# ============ 電氣設備標準 (15項) ============
+
+ELECTRICAL_STANDARDS = [
+    {
+        "standard_id": "elec_insulation_lv",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "絕緣電阻",
+        "keywords": ["絕緣", "insulation", "IR"],
+        "unit": "MΩ",
+        "pass_condition": "gte",
+        "pass_value": 1.0,
+        "warning_value": 2.0,
+        "regulation": "屋內線路裝置規則 第59條",
+        "notes": "三相各相分別量測，對地絕緣電阻",
+    },
+    {
+        "standard_id": "elec_ground_resistance",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "接地電阻",
+        "keywords": ["接地", "ground", "earth"],
+        "unit": "Ω",
+        "pass_condition": "lte",
+        "pass_value": 100.0,
+        "warning_value": 80.0,
+        "regulation": "屋內線路裝置規則 第59條",
+        "notes": "第三種接地工程",
+    },
+    {
+        "standard_id": "elec_rcd_time",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "漏電斷路器動作時間",
+        "keywords": ["漏電", "動作時間", "RCD", "ELCB", "斷路器"],
+        "unit": "ms",
+        "pass_condition": "lte",
+        "pass_value": 100.0,
+        "warning_value": 80.0,
+        "regulation": "CNS 14816",
+        "notes": "額定動作電流下之動作時間",
+    },
+    {
+        "standard_id": "elec_rcd_current",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "漏電斷路器動作電流",
+        "keywords": ["漏電", "動作電流", "RCD", "ELCB"],
+        "unit": "mA",
+        "pass_condition": "lte",
+        "pass_value": 30.0,
+        "warning_value": 25.0,
+        "regulation": "CNS 14816",
+        "notes": "額定感度電流",
+    },
+    {
+        "standard_id": "elec_voltage_deviation",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "電壓偏差率",
+        "keywords": ["電壓", "偏差", "voltage"],
+        "unit": "%",
+        "pass_condition": "lte",
+        "pass_value": 5.0,
+        "warning_value": 4.0,
+        "regulation": "電業法施行細則 第38條",
+        "notes": "額定電壓 ±5% 以內",
+    },
+    {
+        "standard_id": "elec_transformer_temp",
+        "category": "electrical",
+        "equipment_type": "變壓器",
+        "inspection_item": "變壓器油溫",
+        "keywords": ["變壓器", "油溫", "transformer", "temperature"],
+        "unit": "°C",
+        "pass_condition": "lte",
+        "pass_value": 85.0,
+        "warning_value": 75.0,
+        "regulation": "CNS 1390",
+        "notes": "油浸式變壓器頂層油溫",
+    },
+    {
+        "standard_id": "elec_transformer_insulation_hv",
+        "category": "electrical",
+        "equipment_type": "高壓配電設備",
+        "inspection_item": "高壓絕緣電阻",
+        "keywords": ["高壓", "絕緣", "HV"],
+        "unit": "MΩ",
+        "pass_condition": "gte",
+        "pass_value": 100.0,
+        "warning_value": 200.0,
+        "regulation": "屋內線路裝置規則 第59條",
+        "notes": "高壓設備對地絕緣電阻",
+    },
+    {
+        "standard_id": "elec_contact_resistance",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "接觸電阻",
+        "keywords": ["接觸", "contact"],
+        "unit": "μΩ",
+        "pass_condition": "lte",
+        "pass_value": 100.0,
+        "warning_value": 80.0,
+        "regulation": "IEC 62271",
+        "notes": "斷路器接觸電阻",
+    },
+    {
+        "standard_id": "elec_harmonic_thd",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "諧波失真率",
+        "keywords": ["諧波", "THD", "harmonic"],
+        "unit": "%",
+        "pass_condition": "lte",
+        "pass_value": 5.0,
+        "warning_value": 4.0,
+        "regulation": "IEEE 519",
+        "notes": "總諧波失真率 THD",
+    },
+    {
+        "standard_id": "elec_power_factor",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "功率因數",
+        "keywords": ["功率因數", "power factor", "PF", "cosφ"],
+        "unit": "",
+        "pass_condition": "gte",
+        "pass_value": 0.85,
+        "warning_value": 0.9,
+        "regulation": "電業法 第45條",
+        "notes": "用戶功率因數不得低於 0.85",
+    },
+    {
+        "standard_id": "elec_busbar_temp",
+        "category": "electrical",
+        "equipment_type": "低壓配電設備",
+        "inspection_item": "匯流排溫度",
+        "keywords": ["匯流排", "busbar", "溫度", "溫升"],
+        "unit": "°C",
+        "pass_condition": "lte",
+        "pass_value": 70.0,
+        "warning_value": 60.0,
+        "regulation": "IEC 61439",
+        "notes": "銅匯流排最高容許溫度",
+    },
+    {
+        "standard_id": "elec_cable_insulation",
+        "category": "electrical",
+        "equipment_type": "電纜",
+        "inspection_item": "電纜絕緣電阻",
+        "keywords": ["電纜", "cable", "絕緣"],
+        "unit": "MΩ",
+        "pass_condition": "gte",
+        "pass_value": 1.0,
+        "warning_value": 5.0,
+        "regulation": "屋內線路裝置規則 第59條",
+        "notes": "電力電纜對地絕緣電阻",
+    },
+    {
+        "standard_id": "elec_ups_battery_voltage",
+        "category": "electrical",
+        "equipment_type": "UPS",
+        "inspection_item": "UPS 電池電壓",
+        "keywords": ["UPS", "電池", "battery", "voltage"],
+        "unit": "V",
+        "pass_condition": "range",
+        "pass_value": [10.8, 13.8],
+        "warning_value": None,
+        "regulation": "IEEE 1188",
+        "notes": "單節鉛酸蓄電池，浮充電壓",
+    },
+    {
+        "standard_id": "elec_lightning_arrester",
+        "category": "electrical",
+        "equipment_type": "避雷設備",
+        "inspection_item": "避雷器接地電阻",
+        "keywords": ["避雷", "lightning", "SPD"],
+        "unit": "Ω",
+        "pass_condition": "lte",
+        "pass_value": 10.0,
+        "warning_value": 8.0,
+        "regulation": "建築技術規則 第25條",
+        "notes": "避雷導線接地電阻",
+    },
+    {
+        "standard_id": "elec_emergency_gen_start",
+        "category": "electrical",
+        "equipment_type": "發電機",
+        "inspection_item": "緊急發電機啟動時間",
+        "keywords": ["發電機", "generator", "啟動"],
+        "unit": "s",
+        "pass_condition": "lte",
+        "pass_value": 10.0,
+        "warning_value": 8.0,
+        "regulation": "消防法施行細則 第15條",
+        "notes": "緊急發電機應於 10 秒內啟動供電",
+    },
+]
+
+# ============ 消防設備標準 (10項) ============
+
+FIRE_STANDARDS = [
+    {
+        "standard_id": "fire_extinguisher_pressure",
+        "category": "fire",
+        "equipment_type": "滅火器",
+        "inspection_item": "滅火器壓力",
+        "keywords": ["滅火器", "壓力", "extinguisher", "pressure"],
+        "unit": "MPa",
+        "pass_condition": "range",
+        "pass_value": [0.7, 0.98],
+        "warning_value": None,
+        "regulation": "消防法 第6條 / 各類場所消防安全設備設置標準",
+        "notes": "綠色區域為合格範圍",
+    },
+    {
+        "standard_id": "fire_emergency_light_duration",
+        "category": "fire",
+        "equipment_type": "緊急照明",
+        "inspection_item": "緊急照明持續時間",
+        "keywords": ["緊急照明", "emergency light", "持續"],
+        "unit": "min",
+        "pass_condition": "gte",
+        "pass_value": 30.0,
+        "warning_value": 35.0,
+        "regulation": "消防法 第6條",
+        "notes": "停電後應持續照明至少 30 分鐘",
+    },
+    {
+        "standard_id": "fire_emergency_light_lux",
+        "category": "fire",
+        "equipment_type": "緊急照明",
+        "inspection_item": "緊急照明照度",
+        "keywords": ["照度", "lux", "照明"],
+        "unit": "lux",
+        "pass_condition": "gte",
+        "pass_value": 1.0,
+        "warning_value": 2.0,
+        "regulation": "消防法 第6條",
+        "notes": "地面照度 1 lux 以上",
+    },
+    {
+        "standard_id": "fire_smoke_detector_sensitivity",
+        "category": "fire",
+        "equipment_type": "偵煙探測器",
+        "inspection_item": "偵煙探測器靈敏度",
+        "keywords": ["偵煙", "smoke", "探測器", "靈敏度"],
+        "unit": "%/m",
+        "pass_condition": "range",
+        "pass_value": [5.0, 20.0],
+        "warning_value": None,
+        "regulation": "CNS 11877",
+        "notes": "光電式偵煙探測器每公尺減光率",
+    },
+    {
+        "standard_id": "fire_sprinkler_pressure",
+        "category": "fire",
+        "equipment_type": "灑水設備",
+        "inspection_item": "灑水頭放水壓力",
+        "keywords": ["灑水", "sprinkler", "放水壓力"],
+        "unit": "kgf/cm²",
+        "pass_condition": "gte",
+        "pass_value": 1.0,
+        "warning_value": 1.5,
+        "regulation": "各類場所消防安全設備設置標準 第46條",
+        "notes": "最遠灑水頭放水壓力",
+    },
+    {
+        "standard_id": "fire_hydrant_pressure",
+        "category": "fire",
+        "equipment_type": "消防栓",
+        "inspection_item": "消防栓放水壓力",
+        "keywords": ["消防栓", "hydrant", "放水壓力"],
+        "unit": "kgf/cm²",
+        "pass_condition": "gte",
+        "pass_value": 1.7,
+        "warning_value": 2.0,
+        "regulation": "各類場所消防安全設備設置標準 第31條",
+        "notes": "室內消防栓瞄子放水壓力",
+    },
+    {
+        "standard_id": "fire_hydrant_flow",
+        "category": "fire",
+        "equipment_type": "消防栓",
+        "inspection_item": "消防栓放水量",
+        "keywords": ["消防栓", "hydrant", "放水量", "流量"],
+        "unit": "L/min",
+        "pass_condition": "gte",
+        "pass_value": 130.0,
+        "warning_value": 150.0,
+        "regulation": "各類場所消防安全設備設置標準 第31條",
+        "notes": "第一種消防栓每支瞄子放水量",
+    },
+    {
+        "standard_id": "fire_exit_sign_lux",
+        "category": "fire",
+        "equipment_type": "出口標示燈",
+        "inspection_item": "出口標示燈亮度",
+        "keywords": ["出口", "標示燈", "exit", "亮度"],
+        "unit": "cd/m²",
+        "pass_condition": "gte",
+        "pass_value": 50.0,
+        "warning_value": 60.0,
+        "regulation": "CNS 11820",
+        "notes": "出口標示燈面板亮度",
+    },
+    {
+        "standard_id": "fire_co_detector",
+        "category": "fire",
+        "equipment_type": "一氧化碳偵測器",
+        "inspection_item": "CO 偵測器動作濃度",
+        "keywords": ["CO", "一氧化碳", "carbon monoxide"],
+        "unit": "ppm",
+        "pass_condition": "lte",
+        "pass_value": 200.0,
+        "warning_value": 150.0,
+        "regulation": "CNS 15440",
+        "notes": "應於 CO 濃度 200ppm 以下時動作",
+    },
+    {
+        "standard_id": "fire_fire_door_closing",
+        "category": "fire",
+        "equipment_type": "防火門",
+        "inspection_item": "防火門關閉時間",
+        "keywords": ["防火門", "fire door", "關閉"],
+        "unit": "s",
+        "pass_condition": "lte",
+        "pass_value": 5.0,
+        "warning_value": 4.0,
+        "regulation": "建築技術規則 第76條",
+        "notes": "防火門應能自動關閉",
+    },
+]
+
+# ============ 機械設備標準 (10項) ============
+
+MECHANICAL_STANDARDS = [
+    {
+        "standard_id": "mech_motor_temp",
+        "category": "mechanical",
+        "equipment_type": "馬達",
+        "inspection_item": "馬達溫度",
+        "keywords": ["馬達", "motor", "溫度", "temperature"],
+        "unit": "°C",
+        "pass_condition": "lte",
+        "pass_value": 80.0,
+        "warning_value": 70.0,
+        "regulation": "CNS 14400 / IEC 60034",
+        "notes": "B級絕緣馬達表面溫度",
+    },
+    {
+        "standard_id": "mech_vibration",
+        "category": "mechanical",
+        "equipment_type": "旋轉機械",
+        "inspection_item": "振動值",
+        "keywords": ["振動", "vibration"],
+        "unit": "mm/s",
+        "pass_condition": "lte",
+        "pass_value": 4.5,
+        "warning_value": 3.5,
+        "regulation": "ISO 10816-3",
+        "notes": "Group 2 (15-75kW) 中型旋轉機械",
+    },
+    {
+        "standard_id": "mech_bearing_temp",
+        "category": "mechanical",
+        "equipment_type": "軸承",
+        "inspection_item": "軸承溫度",
+        "keywords": ["軸承", "bearing", "溫度"],
+        "unit": "°C",
+        "pass_condition": "lte",
+        "pass_value": 70.0,
+        "warning_value": 60.0,
+        "regulation": "ISO 10816",
+        "notes": "滾動軸承表面溫度",
+    },
+    {
+        "standard_id": "mech_pump_flow",
+        "category": "mechanical",
+        "equipment_type": "泵浦",
+        "inspection_item": "泵浦流量",
+        "keywords": ["泵浦", "pump", "流量", "flow"],
+        "unit": "m³/h",
+        "pass_condition": "gte",
+        "pass_value": None,  # 依設計值而定
+        "warning_value": None,
+        "regulation": "CNS 7783",
+        "notes": "應不低於設計流量的 90%（需配合設計值）",
+    },
+    {
+        "standard_id": "mech_belt_tension",
+        "category": "mechanical",
+        "equipment_type": "皮帶傳動",
+        "inspection_item": "皮帶張力",
+        "keywords": ["皮帶", "belt", "張力", "tension"],
+        "unit": "mm",
+        "pass_condition": "range",
+        "pass_value": [10, 25],
+        "warning_value": None,
+        "regulation": "設備廠商規範",
+        "notes": "每 100mm 跨距下壓 10-25mm 撓度",
+    },
+    {
+        "standard_id": "mech_oil_level",
+        "category": "mechanical",
+        "equipment_type": "潤滑系統",
+        "inspection_item": "潤滑油液位",
+        "keywords": ["油位", "oil level", "潤滑油"],
+        "unit": "",
+        "pass_condition": "in_set",
+        "pass_value": ["正常", "合格", "OK", "normal"],
+        "warning_value": None,
+        "regulation": "設備維護手冊",
+        "notes": "油位應在上下限標記之間",
+    },
+    {
+        "standard_id": "mech_noise_level",
+        "category": "mechanical",
+        "equipment_type": "旋轉機械",
+        "inspection_item": "噪音值",
+        "keywords": ["噪音", "noise", "dB"],
+        "unit": "dB(A)",
+        "pass_condition": "lte",
+        "pass_value": 85.0,
+        "warning_value": 80.0,
+        "regulation": "職業安全衛生設施規則 第300條",
+        "notes": "勞工八小時日時量平均音壓級",
+    },
+    {
+        "standard_id": "mech_alignment",
+        "category": "mechanical",
+        "equipment_type": "旋轉機械",
+        "inspection_item": "軸心偏移量",
+        "keywords": ["偏移", "alignment", "軸心"],
+        "unit": "mm",
+        "pass_condition": "lte",
+        "pass_value": 0.05,
+        "warning_value": 0.03,
+        "regulation": "ISO 10816",
+        "notes": "徑向偏移量",
+    },
+    {
+        "standard_id": "mech_fan_airflow",
+        "category": "mechanical",
+        "equipment_type": "風機",
+        "inspection_item": "風量",
+        "keywords": ["風量", "airflow", "風機", "fan"],
+        "unit": "CMM",
+        "pass_condition": "gte",
+        "pass_value": None,
+        "warning_value": None,
+        "regulation": "設計規範",
+        "notes": "應不低於設計風量的 90%",
+    },
+    {
+        "standard_id": "mech_compressor_pressure",
+        "category": "mechanical",
+        "equipment_type": "空壓機",
+        "inspection_item": "空壓機出口壓力",
+        "keywords": ["空壓機", "compressor", "壓力"],
+        "unit": "kgf/cm²",
+        "pass_condition": "range",
+        "pass_value": [6.0, 8.0],
+        "warning_value": None,
+        "regulation": "設備規範",
+        "notes": "一般工業用空壓機出口壓力",
+    },
+]
+
+# ============ 壓力容器標準 (5項) ============
+
+PRESSURE_STANDARDS = [
+    {
+        "standard_id": "pres_vessel_thickness",
+        "category": "pressure",
+        "equipment_type": "壓力容器",
+        "inspection_item": "壓力容器壁厚",
+        "keywords": ["壁厚", "thickness", "壓力容器"],
+        "unit": "mm",
+        "pass_condition": "gte",
+        "pass_value": None,
+        "warning_value": None,
+        "regulation": "鍋爐及壓力容器安全規則 第39條",
+        "notes": "不得低於設計最小壁厚",
+    },
+    {
+        "standard_id": "pres_relief_valve",
+        "category": "pressure",
+        "equipment_type": "壓力容器",
+        "inspection_item": "安全閥動作壓力",
+        "keywords": ["安全閥", "relief valve", "安全裝置"],
+        "unit": "kgf/cm²",
+        "pass_condition": "lte",
+        "pass_value": None,
+        "warning_value": None,
+        "regulation": "鍋爐及壓力容器安全規則 第42條",
+        "notes": "不得超過最高使用壓力之 1.1 倍",
+    },
+    {
+        "standard_id": "pres_boiler_water_level",
+        "category": "pressure",
+        "equipment_type": "鍋爐",
+        "inspection_item": "鍋爐水位",
+        "keywords": ["鍋爐", "boiler", "水位"],
+        "unit": "",
+        "pass_condition": "in_set",
+        "pass_value": ["正常", "合格", "OK"],
+        "warning_value": None,
+        "regulation": "鍋爐及壓力容器安全規則 第51條",
+        "notes": "水位應在正常操作範圍內",
+    },
+    {
+        "standard_id": "pres_pipe_pressure_test",
+        "category": "pressure",
+        "equipment_type": "壓力管路",
+        "inspection_item": "管路耐壓試驗",
+        "keywords": ["管路", "pipe", "耐壓"],
+        "unit": "kgf/cm²",
+        "pass_condition": "gte",
+        "pass_value": None,
+        "warning_value": None,
+        "regulation": "鍋爐及壓力容器安全規則",
+        "notes": "試驗壓力為最高使用壓力之 1.5 倍，維持 30 分鐘無洩漏",
+    },
+    {
+        "standard_id": "pres_boiler_stack_temp",
+        "category": "pressure",
+        "equipment_type": "鍋爐",
+        "inspection_item": "鍋爐排氣溫度",
+        "keywords": ["排氣", "stack", "煙囪", "排煙"],
+        "unit": "°C",
+        "pass_condition": "lte",
+        "pass_value": 250.0,
+        "warning_value": 220.0,
+        "regulation": "鍋爐效率管理規範",
+        "notes": "排氣溫度過高表示熱交換效率不足",
+    },
+]
+
+
+# ============ 統一標準資料庫 ============
+
+ALL_STANDARDS = (
+    ELECTRICAL_STANDARDS +
+    FIRE_STANDARDS +
+    MECHANICAL_STANDARDS +
+    PRESSURE_STANDARDS
+)
+
+
+class InspectionStandardsDB:
+    """定檢標準值資料庫查詢引擎"""
+
+    def __init__(self, standards: list[dict] = None):
+        self.standards = standards or ALL_STANDARDS
+
+    def get_all(self) -> list[dict]:
+        """取得所有標準"""
+        return self.standards
+
+    def get_by_category(self, category: str) -> list[dict]:
+        """按大類查詢"""
+        return [s for s in self.standards if s["category"] == category]
+
+    def get_by_id(self, standard_id: str) -> Optional[dict]:
+        """按 ID 查詢"""
+        for s in self.standards:
+            if s["standard_id"] == standard_id:
+                return s
+        return None
+
+    def find_matching_standard(
+        self,
+        field_name: str,
+        unit: str = "",
+        equipment_type: str = "",
+    ) -> Optional[dict]:
+        """
+        根據欄位名稱、單位、設備類型 模糊匹配最佳標準
+
+        匹配邏輯:
+        1. 先嘗試精確匹配 inspection_item
+        2. 再嘗試 keywords 模糊匹配
+        3. 如果有單位，優先匹配單位一致的
+        4. 如果有設備類型，優先匹配設備類型一致的
+        """
+        candidates = []
+        field_lower = field_name.lower().strip()
+
+        for std in self.standards:
+            score = 0
+
+            # 精確匹配項目名稱
+            if std["inspection_item"] in field_name or field_name in std["inspection_item"]:
+                score += 10
+
+            # 關鍵字匹配
+            for kw in std.get("keywords", []):
+                if kw.lower() in field_lower:
+                    score += 3
+
+            # 單位匹配加分
+            if unit and std["unit"] and unit.strip() == std["unit"].strip():
+                score += 5
+
+            # 設備類型匹配加分
+            if equipment_type:
+                if equipment_type in std.get("equipment_type", ""):
+                    score += 4
+                elif std.get("equipment_type", "") in equipment_type:
+                    score += 3
+
+            if score > 0:
+                candidates.append((score, std))
+
+        if not candidates:
+            return None
+
+        # 回傳最高分的
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+
+    def judge_value(
+        self,
+        standard: dict,
+        measured_value,
+    ) -> dict:
+        """
+        根據標準值判定量測值
+
+        回傳:
+        {
+            "judgment": "pass" | "fail" | "warning" | "unknown",
+            "standard_text": ">=1.0 MΩ",
+            "regulation": "屋內線路裝置規則 第59條",
+        }
+        """
+        condition = standard.get("pass_condition")
+        pass_val = standard.get("pass_value")
+        warning_val = standard.get("warning_value")
+        unit = standard.get("unit", "")
+        regulation = standard.get("regulation", "")
+
+        # 如果沒有標準值，無法判定
+        if pass_val is None:
+            return {
+                "judgment": "unknown",
+                "standard_text": f"依設計值 ({unit})" if unit else "依設計值",
+                "regulation": regulation,
+            }
+
+        # in_set 比較（文字值）
+        if condition == "in_set":
+            value_str = str(measured_value).strip()
+            is_pass = value_str in pass_val
+            return {
+                "judgment": "pass" if is_pass else "fail",
+                "standard_text": f"必須為: {'/'.join(pass_val)}",
+                "regulation": regulation,
+            }
+
+        # 數值型比較
+        try:
+            num_val = float(measured_value)
+        except (ValueError, TypeError):
+            return {
+                "judgment": "unknown",
+                "standard_text": self._format_standard_text(condition, pass_val, unit),
+                "regulation": regulation,
+            }
+
+        standard_text = self._format_standard_text(condition, pass_val, unit)
+
+        if condition == "gte":
+            if num_val >= pass_val:
+                if warning_val is not None and num_val < warning_val:
+                    return {"judgment": "warning", "standard_text": standard_text, "regulation": regulation}
+                return {"judgment": "pass", "standard_text": standard_text, "regulation": regulation}
+            return {"judgment": "fail", "standard_text": standard_text, "regulation": regulation}
+
+        elif condition == "lte":
+            if num_val <= pass_val:
+                if warning_val is not None and num_val > warning_val:
+                    return {"judgment": "warning", "standard_text": standard_text, "regulation": regulation}
+                return {"judgment": "pass", "standard_text": standard_text, "regulation": regulation}
+            return {"judgment": "fail", "standard_text": standard_text, "regulation": regulation}
+
+        elif condition == "range":
+            min_val, max_val = pass_val[0], pass_val[1]
+            if min_val <= num_val <= max_val:
+                return {"judgment": "pass", "standard_text": standard_text, "regulation": regulation}
+            return {"judgment": "fail", "standard_text": standard_text, "regulation": regulation}
+
+        elif condition == "eq":
+            if abs(num_val - pass_val) < 0.001:
+                return {"judgment": "pass", "standard_text": standard_text, "regulation": regulation}
+            return {"judgment": "fail", "standard_text": standard_text, "regulation": regulation}
+
+        return {"judgment": "unknown", "standard_text": standard_text, "regulation": regulation}
+
+    def _format_standard_text(self, condition: str, pass_val, unit: str) -> str:
+        """格式化標準值文字"""
+        if condition == "gte":
+            return f"≥{pass_val} {unit}".strip()
+        elif condition == "lte":
+            return f"≤{pass_val} {unit}".strip()
+        elif condition == "range":
+            return f"{pass_val[0]}~{pass_val[1]} {unit}".strip()
+        elif condition == "eq":
+            return f"={pass_val} {unit}".strip()
+        elif condition == "in_set":
+            return f"{'|'.join(str(v) for v in pass_val)}"
+        return str(pass_val)
+
+    def get_stats(self) -> dict:
+        """取得標準資料庫統計"""
+        categories = {}
+        for s in self.standards:
+            cat = s["category"]
+            categories[cat] = categories.get(cat, 0) + 1
+
+        return {
+            "total": len(self.standards),
+            "categories": categories,
+            "with_regulation": sum(1 for s in self.standards if s.get("regulation")),
+        }

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "templates": [
+    {
+      "template_id": "electrical_inspection",
+      "name": "電氣設備定期檢查表（通用版）",
+      "description": "適用於低壓/高壓配電設備、變壓器等電氣設備之定期檢查",
+      "file_name": "electrical_inspection.xlsx",
+      "category": "電氣設備",
+      "icon": "bolt"
+    },
+    {
+      "template_id": "fire_safety_inspection",
+      "name": "消防安全設備檢查表（通用版）",
+      "description": "適用於消防栓、滅火器、警報系統等消防安全設備之定期檢查",
+      "file_name": "fire_safety_inspection.xlsx",
+      "category": "消防安全",
+      "icon": "fire_extinguisher"
+    },
+    {
+      "template_id": "motor_inspection",
+      "name": "馬達/泵浦定期檢查表",
+      "description": "適用於馬達、泵浦、風機等旋轉機械之定期檢查",
+      "file_name": "motor_inspection.xlsx",
+      "category": "機械設備",
+      "icon": "settings"
+    },
+    {
+      "template_id": "5s_audit",
+      "name": "廠區 5S 巡查表",
+      "description": "適用於廠區整理、整頓、清掃、清潔、素養之5S巡查",
+      "file_name": "5s_audit.xlsx",
+      "category": "廠區管理",
+      "icon": "checklist"
+    }
+  ]
+}
