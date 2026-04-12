@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import '../models/template_inspection_record.dart';
 import '../models/photo_sync_task.dart';
+import '../models/form_inspection_record.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -23,7 +24,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -83,12 +84,49 @@ class DatabaseService {
     await db.execute('''
       CREATE INDEX idx_sync_record_id ON photo_sync_tasks(record_id)
     ''');
+
+    // 表單檢測紀錄表（v3）
+    await _createFormInspectionRecordsTable(db);
+  }
+
+  Future<void> _createFormInspectionRecordsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE form_inspection_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        record_id TEXT UNIQUE NOT NULL,
+        title TEXT NOT NULL,
+        source_file_name TEXT,
+        template_json TEXT,
+        filled_data TEXT NOT NULL,
+        ai_results TEXT,
+        summary_report TEXT,
+        filled_document_path TEXT,
+        status TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        location_name TEXT,
+        photo_paths TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        pending_share INTEGER DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_form_status ON form_inspection_records(status)
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_form_created_at ON form_inspection_records(created_at)
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_form_title ON form_inspection_records(title)
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     debugPrint('Upgrading database from version $oldVersion to $newVersion');
 
-    // Add photo_sync_tasks table for version 2
+    // v2: photo_sync_tasks 表
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TABLE photo_sync_tasks (
@@ -111,6 +149,11 @@ class DatabaseService {
       await db.execute('''
         CREATE INDEX idx_sync_record_id ON photo_sync_tasks(record_id)
       ''');
+    }
+
+    // v3: form_inspection_records 表
+    if (oldVersion < 3) {
+      await _createFormInspectionRecordsTable(db);
     }
   }
 
@@ -478,5 +521,157 @@ class DatabaseService {
   Future<void> clearAllSyncTasks() async {
     final db = await database;
     await db.delete('photo_sync_tasks');
+  }
+
+  // ==================== Form Inspection Record Operations ====================
+
+  /// 儲存表單檢測紀錄（新增或更新）
+  Future<int> saveFormRecord(FormInspectionRecord record) async {
+    final db = await database;
+    record.updatedAt = DateTime.now();
+    final map = record.toMap();
+
+    if (record.id != null) {
+      await db.update(
+        'form_inspection_records',
+        map,
+        where: 'id = ?',
+        whereArgs: [record.id],
+      );
+      return record.id!;
+    } else {
+      return await db.insert(
+        'form_inspection_records',
+        map,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  }
+
+  /// 依 recordId 查詢
+  Future<FormInspectionRecord?> getFormRecordByRecordId(String recordId) async {
+    final db = await database;
+    final results = await db.query(
+      'form_inspection_records',
+      where: 'record_id = ?',
+      whereArgs: [recordId],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+    return FormInspectionRecord.fromMap(results.first);
+  }
+
+  /// 取得所有表單檢測紀錄
+  Future<List<FormInspectionRecord>> getAllFormRecords({
+    FormRecordStatus? status,
+    int? limit,
+    int? offset,
+  }) async {
+    final db = await database;
+
+    String? where;
+    List<dynamic>? whereArgs;
+
+    if (status != null) {
+      where = 'status = ?';
+      whereArgs = [status.name];
+    }
+
+    final results = await db.query(
+      'form_inspection_records',
+      where: where,
+      whereArgs: whereArgs,
+      orderBy: 'created_at DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    return results.map((m) => FormInspectionRecord.fromMap(m)).toList();
+  }
+
+  /// 搜尋表單檢測紀錄（標題、檔名、地點）
+  Future<List<FormInspectionRecord>> searchFormRecords(String query) async {
+    final db = await database;
+    final pattern = '%$query%';
+
+    final results = await db.query(
+      'form_inspection_records',
+      where: 'title LIKE ? OR source_file_name LIKE ? OR location_name LIKE ?',
+      whereArgs: [pattern, pattern, pattern],
+      orderBy: 'created_at DESC',
+    );
+
+    return results.map((m) => FormInspectionRecord.fromMap(m)).toList();
+  }
+
+  /// 更新紀錄標題
+  Future<void> updateFormRecordTitle(String recordId, String newTitle) async {
+    final db = await database;
+    await db.update(
+      'form_inspection_records',
+      {
+        'title': newTitle,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'record_id = ?',
+      whereArgs: [recordId],
+    );
+  }
+
+  /// 取得待分享的紀錄
+  Future<List<FormInspectionRecord>> getFormRecordsPendingShare() async {
+    final db = await database;
+    final results = await db.query(
+      'form_inspection_records',
+      where: 'pending_share = 1',
+      orderBy: 'updated_at ASC',
+    );
+    return results.map((m) => FormInspectionRecord.fromMap(m)).toList();
+  }
+
+  /// 標記分享完成
+  Future<void> markFormShareComplete(String recordId) async {
+    final db = await database;
+    await db.update(
+      'form_inspection_records',
+      {
+        'pending_share': 0,
+        'status': FormRecordStatus.shared.name,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'record_id = ?',
+      whereArgs: [recordId],
+    );
+  }
+
+  /// 刪除表單檢測紀錄
+  Future<int> deleteFormRecord(String recordId) async {
+    final db = await database;
+    return await db.delete(
+      'form_inspection_records',
+      where: 'record_id = ?',
+      whereArgs: [recordId],
+    );
+  }
+
+  /// 取得表單檢測紀錄數量
+  Future<int> getFormRecordCount({FormRecordStatus? status}) async {
+    final db = await database;
+    String sql = 'SELECT COUNT(*) as count FROM form_inspection_records';
+    List<dynamic>? args;
+
+    if (status != null) {
+      sql += ' WHERE status = ?';
+      args = [status.name];
+    }
+
+    final result = await db.rawQuery(sql, args);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// 清除所有表單檢測紀錄
+  Future<void> clearAllFormRecords() async {
+    final db = await database;
+    await db.delete('form_inspection_records');
   }
 }

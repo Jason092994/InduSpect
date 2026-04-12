@@ -6,14 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 import '../models/inspection_template.dart';
 import '../models/template_field.dart';
 import '../models/analysis_result.dart';
+import '../models/form_inspection_record.dart';
 import '../services/gemini_service.dart';
 import '../services/local_template_creator.dart';
 import '../services/backend_api_service.dart';
 import '../services/file_save_service.dart';
+import '../services/database_service.dart';
+import '../services/location_service.dart';
+import '../services/photo_service.dart';
+import '../services/connectivity_service.dart';
+import '../screens/guided_capture_screen.dart';
 import '../utils/constants.dart';
 
 /// 表單檢測填寫模式
@@ -56,6 +64,8 @@ class InspectionItemState {
   String? manualValue;
   bool isCompleted;
   bool isAnalyzing;
+  // 每個項目持有自己的 controller，避免 build 時重建導致游標跳位
+  late final TextEditingController manualController;
 
   InspectionItemState({
     required this.fieldId,
@@ -67,7 +77,9 @@ class InspectionItemState {
     this.manualValue,
     this.isCompleted = false,
     this.isAnalyzing = false,
-  });
+  }) {
+    manualController = TextEditingController(text: manualValue ?? '');
+  }
 
   /// 取得此項目的填入值（AI 結果或手動填入）
   String? get displayValue {
@@ -119,6 +131,17 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
   String? _summaryReport;
   bool _isGeneratingReport = false;
 
+  // 持久化 & GPS
+  final DatabaseService _dbService = DatabaseService();
+  FormInspectionRecord? _currentRecord;
+  String _inspectionTitle = '';
+  final TextEditingController _titleController = TextEditingController();
+  LocationData? _locationData;
+  bool _isLocating = false;
+
+  // 匯出的文件路徑（用於分享）
+  String? _exportedFilePath;
+
   // 服務
   final ImagePicker _imagePicker = ImagePicker();
   GeminiService? _geminiService;
@@ -130,6 +153,16 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
   void initState() {
     super.initState();
     _initGemini();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    // 釋放所有檢測項目的 controller
+    for (final item in _inspectionItems) {
+      item.manualController.dispose();
+    }
+    super.dispose();
   }
 
   void _initGemini() {
@@ -202,10 +235,23 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
       // 從模板建立檢測項目列表
       _buildInspectionItems();
 
+      // 產生預設標題
+      final now = DateTime.now();
+      final dateStr = DateFormat('MM/dd HH:mm').format(now);
+      final baseName = _fileName?.replaceAll(RegExp(r'\.\w+$'), '') ?? '檢測';
+      _inspectionTitle = '$baseName - $dateStr';
+      _titleController.text = _inspectionTitle;
+
+      // 開始 GPS 定位（背景執行，不阻塞）
+      _captureLocation();
+
       setState(() {
         _isLoading = false;
         _currentStep = FormInspectionStep.inspecting;
       });
+
+      // 建立 draft 記錄存入 SQLite
+      await _createDraftRecord();
     } catch (e) {
       _showError('分析表單時發生錯誤: $e');
     }
@@ -233,6 +279,128 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
     }
 
     _currentItemIndex = 0;
+  }
+
+  // ========== GPS & 持久化 ==========
+
+  /// 背景擷取 GPS 位置，完成後回寫 draft 紀錄
+  Future<void> _captureLocation() async {
+    setState(() => _isLocating = true);
+    try {
+      _locationData = await LocationService().getCurrentPosition();
+      // GPS 完成後更新已建立的 draft 紀錄
+      if (_locationData != null && _currentRecord != null) {
+        _currentRecord = _currentRecord!.copyWith(
+          latitude: _locationData!.latitude,
+          longitude: _locationData!.longitude,
+          locationName: _locationData!.locationName,
+        );
+        await _dbService.saveFormRecord(_currentRecord!);
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _isLocating = false);
+  }
+
+  /// 建立 draft 記錄
+  Future<void> _createDraftRecord() async {
+    final record = FormInspectionRecord(
+      recordId: const Uuid().v4(),
+      title: _inspectionTitle,
+      sourceFileName: _fileName,
+      templateJson: _templateJson != null ? jsonEncode(_templateJson) : null,
+      filledData: Map.from(_filledData),
+      status: FormRecordStatus.draft,
+      latitude: _locationData?.latitude,
+      longitude: _locationData?.longitude,
+      locationName: _locationData?.locationName,
+    );
+
+    final id = await _dbService.saveFormRecord(record);
+    _currentRecord = record.copyWith(id: id);
+  }
+
+  /// 儲存目前進度到 SQLite
+  Future<void> _saveDraft() async {
+    if (_currentRecord == null) return;
+
+    // 收集 AI 結果
+    final aiResults = <String, dynamic>{};
+    final photoPaths = <String>[];
+    for (final item in _inspectionItems) {
+      if (item.aiResult != null) aiResults[item.fieldId] = item.aiResult;
+      if (item.photoPath != null) photoPaths.add(item.photoPath!);
+    }
+
+    _currentRecord = _currentRecord!.copyWith(
+      title: _inspectionTitle,
+      filledData: Map.from(_filledData),
+      aiResults: aiResults,
+      photoPaths: photoPaths,
+      latitude: _locationData?.latitude ?? _currentRecord!.latitude,
+      longitude: _locationData?.longitude ?? _currentRecord!.longitude,
+      locationName: _locationData?.locationName ?? _currentRecord!.locationName,
+    );
+
+    await _dbService.saveFormRecord(_currentRecord!);
+  }
+
+  // ========== GuidedCapture 整合 ==========
+
+  /// 啟動批次引導式拍照
+  Future<void> _launchGuidedCapture() async {
+    // 將 inspectionItems 轉為 photoTasks 格式
+    final photoTasks = <Map<String, dynamic>>[];
+    for (int i = 0; i < _inspectionItems.length; i++) {
+      final item = _inspectionItems[i];
+      if (item.isCompleted) continue; // 跳過已完成的
+      photoTasks.add({
+        'task_id': item.fieldId,
+        'display_name': item.label,
+        'photo_hint': '拍攝 ${item.label} 的照片',
+        'field_name': item.label,
+        'sequence': i + 1,
+      });
+    }
+
+    if (photoTasks.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('所有項目已完成，無需拍照')),
+        );
+      }
+      return;
+    }
+
+    final bindings = await Navigator.push<List<PhotoBinding>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GuidedCaptureScreen(
+          photoTasks: photoTasks,
+          equipmentName: _template?.templateName ?? '',
+          allowSkip: true,
+        ),
+      ),
+    );
+
+    if (bindings == null || bindings.isEmpty) return;
+
+    // 將結果映射回各項目並觸發 AI 分析
+    for (final binding in bindings) {
+      final index = _inspectionItems.indexWhere((i) => i.fieldId == binding.taskId);
+      if (index < 0) continue;
+
+      final item = _inspectionItems[index];
+      final imageBytes = binding.photoBytes ?? await File(binding.filePath).readAsBytes();
+
+      setState(() {
+        item.photoPath = binding.filePath;
+        item.photoBytes = imageBytes;
+        item.isAnalyzing = true;
+      });
+
+      // 觸發 AI 分析（不等待，讓多張照片可並行分析）
+      _runAIAnalysis(item, imageBytes, binding.filePath);
+    }
   }
 
   // ========== Step 2: 逐項檢測 ==========
@@ -320,6 +488,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
           item.isCompleted = true;
           _mapAIResultToField(item, resultMap);
         });
+
+        // 自動存檔
+        _saveDraft();
       } catch (e) {
         debugPrint('AI 分析失敗: $e');
         setState(() {
@@ -430,6 +601,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
       item.isCompleted = value.isNotEmpty;
       _filledData[item.fieldId] = value;
     });
+    _saveDraft();
   }
 
   // ========== Step 3: 預覽 ==========
@@ -496,10 +668,14 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
               );
 
               if (filledBytes != null) {
-                await FileSaveService.saveAndShare(
-                  bytes: Uint8List.fromList(filledBytes),
-                  fileName: 'filled_$_fileName',
-                );
+                // 儲存到本地暫存（不立即分享）
+                final dir = await Directory.systemTemp.createTemp('induspect_');
+                final outputPath = '${dir.path}/filled_$_fileName';
+                await File(outputPath).writeAsBytes(filledBytes);
+                _exportedFilePath = outputPath;
+
+                // 更新資料庫
+                await _updateRecordAsExported();
 
                 setState(() {
                   _isLoading = false;
@@ -515,7 +691,10 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
       }
 
       // 後端不可用時，匯出為 JSON 摘要
-      await _exportAsJsonSummary();
+      _exportedFilePath = await _exportAsJsonSummary();
+
+      // 更新資料庫
+      await _updateRecordAsExported();
 
       setState(() {
         _isLoading = false;
@@ -526,8 +705,19 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
     }
   }
 
-  /// 匯出為 JSON 摘要檔案
-  Future<void> _exportAsJsonSummary() async {
+  /// 更新紀錄為已匯出
+  Future<void> _updateRecordAsExported() async {
+    if (_currentRecord == null) return;
+    _currentRecord = _currentRecord!.copyWith(
+      status: FormRecordStatus.exported,
+      filledDocumentPath: _exportedFilePath,
+      summaryReport: _summaryReport,
+    );
+    await _dbService.saveFormRecord(_currentRecord!);
+  }
+
+  /// 匯出為 JSON 摘要檔案，回傳檔案路徑
+  Future<String?> _exportAsJsonSummary() async {
     final summary = {
       'inspection_date': DateTime.now().toIso8601String(),
       'source_file': _fileName,
@@ -553,10 +743,11 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
     final outputName = '${_fileName?.replaceAll(RegExp(r'\.\w+$'), '')}_inspection_result.json';
 
-    await FileSaveService.saveAndShare(
-      bytes: Uint8List.fromList(jsonBytes),
-      fileName: outputName,
-    );
+    // 儲存到本地暫存
+    final dir = await Directory.systemTemp.createTemp('induspect_');
+    final outputPath = '${dir.path}/$outputName';
+    await File(outputPath).writeAsBytes(jsonBytes);
+    return outputPath;
   }
 
   // ========== AI 摘要報告 ==========
@@ -597,6 +788,12 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         _summaryReport = report;
         _isGeneratingReport = false;
       });
+
+      // 存入資料庫
+      if (_currentRecord != null) {
+        _currentRecord = _currentRecord!.copyWith(summaryReport: report);
+        await _dbService.saveFormRecord(_currentRecord!);
+      }
     } catch (e) {
       setState(() {
         _summaryReport = '報告生成失敗：$e';
@@ -843,6 +1040,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
   Widget _buildInspectionView() {
     return Column(
       children: [
+        // 標題 + GPS 狀態
+        _buildTitleBar(),
+
         // 進度條
         _buildProgressBar(),
 
@@ -863,6 +1063,45 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         // 底部操作列
         _buildInspectionBottomBar(),
       ],
+    );
+  }
+
+  Widget _buildTitleBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: '檢測標題',
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+              style: const TextStyle(fontSize: 14),
+              onChanged: (value) {
+                _inspectionTitle = value;
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          // GPS 狀態
+          if (_isLocating)
+            const SizedBox(
+              width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Icon(
+              _locationData != null ? Icons.location_on : Icons.location_off,
+              color: _locationData != null ? Colors.green : Colors.grey,
+              size: 20,
+            ),
+        ],
+      ),
     );
   }
 
@@ -1081,7 +1320,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   isDense: true,
                 ),
-                controller: TextEditingController(text: item.manualValue ?? ''),
+                controller: item.manualController,
                 onChanged: (value) => _setManualValue(index, value),
               ),
             ],
@@ -1139,6 +1378,19 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
               ),
             ),
           if (_mode == InspectionMode.manual) const SizedBox(width: 12),
+
+          // 批次拍照按鈕（拍照模式時顯示）
+          if (_mode == InspectionMode.photo) ...[
+            OutlinedButton.icon(
+              onPressed: _launchGuidedCapture,
+              icon: const Icon(Icons.burst_mode, size: 18),
+              label: const Text('批次拍照'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
 
           // 預覽/完成按鈕
           Expanded(
@@ -1437,7 +1689,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
           ),
         ),
 
-        // 底部操作列
+        // 底部操作列：分享 + 返回
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -1450,20 +1702,118 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
               ),
             ],
           ),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.done),
-              label: const Text('返回主頁'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 分享按鈕列
+              Row(
+                children: [
+                  // 分享文件
+                  if (_exportedFilePath != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _shareFile(_exportedFilePath!),
+                        icon: const Icon(Icons.description, size: 18),
+                        label: const Text('分享表單', style: TextStyle(fontSize: 13)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  if (_exportedFilePath != null && _summaryReport != null)
+                    const SizedBox(width: 8),
+                  // 分享報告
+                  if (_summaryReport != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _shareReport,
+                        icon: const Icon(Icons.article, size: 18),
+                        label: const Text('分享報告', style: TextStyle(fontSize: 13)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ),
+              const SizedBox(height: 8),
+              // 返回主頁
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.done),
+                  label: const Text('返回主頁'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  /// 分享檔案（離線時暫存）
+  Future<void> _shareFile(String filePath) async {
+    try {
+      final isOnline = await ConnectivityService().checkConnection();
+      if (isOnline) {
+        await FileSaveService.saveAndShare(
+          bytes: await File(filePath).readAsBytes(),
+          fileName: p.basename(filePath),
+        );
+        // 更新狀態為已分享
+        if (_currentRecord != null) {
+          _currentRecord = _currentRecord!.copyWith(
+            status: FormRecordStatus.shared,
+            pendingShare: false,
+          );
+          await _dbService.saveFormRecord(_currentRecord!);
+        }
+      } else {
+        // 離線：標記待分享
+        if (_currentRecord != null) {
+          _currentRecord = _currentRecord!.copyWith(pendingShare: true);
+          await _dbService.saveFormRecord(_currentRecord!);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('目前離線，檔案已儲存。恢復網路後可重新分享。'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('分享失敗: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// 分享摘要報告
+  Future<void> _shareReport() async {
+    if (_summaryReport == null) return;
+    try {
+      final reportBytes = utf8.encode(_summaryReport!);
+      final reportName = '${_fileName?.replaceAll(RegExp(r'\.\w+$'), '') ?? 'inspection'}_report.txt';
+      await FileSaveService.saveAndShare(
+        bytes: Uint8List.fromList(reportBytes),
+        fileName: reportName,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('分享報告失敗: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget _buildDoneStat(String label, String value, Color color) {

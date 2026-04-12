@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/inspection_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/app_state_provider.dart';
-import 'quick_analysis_screen.dart';
-import 'history_screen.dart';
-import 'template_selection_screen.dart';
-import 'inspection_records_screen.dart';
+import '../models/form_inspection_record.dart';
+import '../services/database_service.dart';
 import 'form_inspection_screen.dart';
+import 'unified_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,6 +18,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isInitialized = false;
+  // 快取 Future 避免每次 build 都重新查詢
+  Future<List<FormInspectionRecord>>? _recentRecordsFuture;
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) {
       setState(() {
         _isInitialized = true;
+        _recentRecordsFuture = DatabaseService().getAllFormRecords(limit: 3);
       });
     }
   }
@@ -98,7 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 24),
 
             // 最近檢測記錄
-            _buildRecentInspections(context, inspection),
+            _buildRecentFormInspections(context),
           ],
         ),
       ),
@@ -198,11 +201,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // 主要功能：表單檢測（上傳→拍照→AI→回填）
+        // 主要功能：開始檢測（全寬突出）
         _buildActionCard(
           context,
           icon: Icons.auto_fix_high,
-          title: '表單檢測（推薦）',
+          title: '開始檢測',
           subtitle: '上傳定檢表 → 拍照 → AI 分析 → 自動回填',
           color: Colors.teal,
           onTap: () => Navigator.push(
@@ -213,62 +216,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                context,
-                icon: Icons.flash_on,
-                title: '快速分析',
-                subtitle: '單張照片即時分析',
-                color: Colors.blue,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const QuickAnalysisScreen(),
-                  ),
-                ),
-              ),
+        // 歷史紀錄
+        _buildActionCard(
+          context,
+          icon: Icons.history,
+          title: '歷史紀錄',
+          subtitle: '查看過往檢測記錄',
+          color: Colors.indigo,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const UnifiedHistoryScreen(),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                context,
-                icon: Icons.assignment,
-                title: '模板檢測',
-                subtitle: '使用定檢表模板',
-                color: Colors.green,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TemplateSelectionScreen(),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                context,
-                icon: Icons.history,
-                title: '檢測記錄',
-                subtitle: '查看歷史記錄',
-                color: Colors.purple,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const InspectionRecordsScreen(),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(child: SizedBox()),
-          ],
+          ),
         ),
       ],
     );
@@ -425,137 +385,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildRecentInspections(
-    BuildContext context,
-    InspectionProvider inspection,
-  ) {
-    final records = inspection.inspectionRecords;
+  Widget _buildRecentFormInspections(BuildContext context) {
+    return FutureBuilder<List<FormInspectionRecord>>(
+      future: _recentRecordsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
 
-    if (records.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.inbox, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 16),
-                Text(
-                  '尚無檢測記錄',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '開始您的第一次設備檢測',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+        final records = snapshot.data ?? [];
 
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '最近檢測',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+        if (records.isEmpty) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.inbox, size: 48, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text('尚無檢測記錄',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    const SizedBox(height: 8),
+                    Text('開始您的第一次設備檢測',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/history'),
-                  child: const Text('查看更多'),
-                ),
-              ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: records.length > 3 ? 3 : records.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final record = records[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue[100],
-                  child: const Icon(Icons.description, color: Colors.blue),
+          );
+        }
+
+        return Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('最近檢測',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            )),
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const UnifiedHistoryScreen()),
+                      ),
+                      child: const Text('查看更多'),
+                    ),
+                  ],
                 ),
-                title: Text(
-                  '檢測記錄 ${records.length - index}',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                subtitle: _isQuickAnalysis(record)
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[50],
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: Colors.blue[200]!),
-                              ),
-                              child: const Text(
-                                '快速分析',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              record.itemDescription,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        )
-                      : Text(
-                          record.itemDescription,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const HistoryScreen(),
+              ),
+              const Divider(height: 1),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: records.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final record = records[index];
+                  final dateStr = DateFormat('MM/dd HH:mm').format(record.createdAt);
+                  final hasAnomaly = record.anomalyCount > 0;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: hasAnomaly ? Colors.red[50] : Colors.blue[50],
+                      child: Icon(
+                        hasAnomaly ? Icons.warning : Icons.check_circle,
+                        color: hasAnomaly ? Colors.red : Colors.blue,
+                      ),
+                    ),
+                    title: Text(record.title,
+                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    subtitle: Row(
+                      children: [
+                        Text(dateStr, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                        if (record.locationName != null) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.location_on, size: 12, color: Colors.grey),
+                          Expanded(
+                            child: Text(record.locationName!,
+                                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      ],
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const UnifiedHistoryScreen()),
                     ),
                   );
                 },
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  bool _isQuickAnalysis(var record) {
-    return record.itemDescription == record.equipmentType || 
-           record.itemDescription == '快速分析項目';
   }
 }

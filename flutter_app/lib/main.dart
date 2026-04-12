@@ -9,9 +9,10 @@ import 'providers/settings_provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/guide_screen.dart';
-import 'screens/history_screen.dart';
+import 'screens/unified_history_screen.dart';
 import 'services/connectivity_service.dart';
 import 'services/photo_sync_service.dart';
+import 'services/share_queue_service.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -37,6 +38,9 @@ void main() async {
 
   final photoSyncService = PhotoSyncService();
   await photoSyncService.initialize();
+
+  // 離線分享佇列
+  ShareQueueService().initialize();
 
   runApp(const InduSpectApp());
 }
@@ -93,7 +97,7 @@ class InduSpectApp extends StatelessWidget {
         routes: {
           '/settings': (context) => const SettingsScreen(),
           '/guide': (context) => const GuideScreen(),
-          '/history': (context) => const HistoryScreen(),
+          '/history': (context) => const UnifiedHistoryScreen(),
         },
       ),
     );
