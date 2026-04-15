@@ -17,6 +17,8 @@ from datetime import datetime
 
 import google.generativeai as genai
 from openpyxl import load_workbook
+from openpyxl.cell.cell import MergedCell
+from openpyxl.utils import get_column_letter, column_index_from_string
 from docx import Document
 
 from app.config import settings
@@ -103,7 +105,13 @@ class AutoFillService:
                 cell_coord = label_loc.get("cell")
                 if sheet_name and cell_coord and sheet_name in wb.sheetnames:
                     ws = wb[sheet_name]
-                    ws[cell_coord] = value
+                    target = ws[cell_coord]
+                    if isinstance(target, MergedCell):
+                        resolved = self._resolve_merged_cell(ws, cell_coord)
+                        if resolved:
+                            ws[resolved] = value
+                    else:
+                        ws[cell_coord] = value
                 continue
 
             sheet_name = val_loc.get("sheet")
@@ -121,8 +129,17 @@ class AutoFillService:
             # 根據欄位類型轉換值
             typed_value = convert_value(value, field.get("field_type", "text"))
 
-            # 寫入值，保留原始格式
+            # 處理合併儲存格：找到 merge range 的左上角 cell
             target_cell = ws[cell_coord]
+            if isinstance(target_cell, MergedCell):
+                # 該格在合併區域內但不是左上角，找到對應的左上角
+                resolved = self._resolve_merged_cell(ws, cell_coord)
+                if resolved:
+                    target_cell = ws[resolved]
+                    logger.info(f"MergedCell {cell_coord} → 左上角 {resolved}")
+                else:
+                    logger.warning(f"無法解析合併格 {cell_coord}，跳過")
+                    continue
 
             # 複製原始格式資訊
             original_font = copy.copy(target_cell.font) if target_cell.font else None
@@ -144,6 +161,30 @@ class AutoFillService:
         wb.save(output)
         output.seek(0)
         return output.read()
+
+    @staticmethod
+    def _resolve_merged_cell(ws, cell_coord: str) -> Optional[str]:
+        """
+        找到合併儲存格的左上角座標。
+
+        openpyxl 中 MergedCell 不能直接寫入 .value，
+        必須寫入 merge range 的左上角才會生效。
+        """
+        from openpyxl.utils import coordinate_to_tuple
+        try:
+            row, col = coordinate_to_tuple(cell_coord)
+        except Exception:
+            return None
+
+        for merge_range in ws.merged_cells.ranges:
+            if cell_coord in merge_range or (
+                merge_range.min_row <= row <= merge_range.max_row and
+                merge_range.min_col <= col <= merge_range.max_col
+            ):
+                top_left = f"{get_column_letter(merge_range.min_col)}{merge_range.min_row}"
+                return top_left
+
+        return None
 
     async def _auto_fill_word(
         self,
@@ -193,6 +234,12 @@ class AutoFillService:
                 table_idx = val_loc.get("table_index")
                 row_idx = val_loc.get("row_index")
                 cell_idx = val_loc.get("cell_index")
+
+                # 向後相容：舊版 field_map 的 table_index 可能為 None，
+                # 用 label_location 的 table_index 作為 fallback
+                if table_idx is None:
+                    label_loc = field.get("label_location", {})
+                    table_idx = label_loc.get("table_index")
 
                 if (table_idx is not None and
                         table_idx < len(doc.tables) and

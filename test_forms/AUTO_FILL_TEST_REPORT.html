@@ -1,0 +1,4810 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InduSpect 表單自動回填測試報告</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: #f5f6fa; color: #2c3e50; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+h1 { text-align: center; margin: 30px 0; color: #2c3e50; }
+.summary { display: flex; gap: 20px; justify-content: center; margin: 30px 0; flex-wrap: wrap; }
+.summary-card { background: white; border-radius: 12px; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); text-align: center; min-width: 140px; }
+.summary-card .number { font-size: 36px; font-weight: bold; }
+.summary-card .label { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
+.level-section { background: white; border-radius: 12px; margin: 25px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; }
+.level-header { padding: 18px 25px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.level-header:hover { opacity: 0.9; }
+.level-body { padding: 0 25px 25px; }
+.test-file { border: 1px solid #ecf0f1; border-radius: 8px; margin: 15px 0; overflow: hidden; }
+.test-file-header { padding: 12px 18px; background: #f8f9fa; display: flex; justify-content: space-between; align-items: center; font-weight: 600; cursor: pointer; }
+.test-file-header:hover { background: #ecf0f1; }
+.test-file-body { padding: 15px 18px; display: none; }
+.test-file-body.open { display: block; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.info-item { padding: 8px 12px; background: #f8f9fa; border-radius: 6px; font-size: 14px; }
+.info-label { color: #7f8c8d; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+th { background: #34495e; color: white; padding: 10px 12px; text-align: left; position: sticky; top: 0; }
+td { padding: 8px 12px; border-bottom: 1px solid #ecf0f1; }
+tr:hover { background: #f8f9fa; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; color: white; }
+.field-map-table { margin-top: 10px; }
+.field-map-table th { background: #2c3e50; font-size: 12px; }
+.field-map-table td { font-size: 12px; font-family: 'Consolas', monospace; }
+.diff-added { background: #d4edda; }
+.diff-empty { color: #bdc3c7; font-style: italic; }
+.error-box { background: #fce4e4; border-left: 4px solid #e74c3c; padding: 12px; margin: 10px 0; border-radius: 4px; font-size: 13px; }
+.warn-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 12px; margin: 10px 0; border-radius: 4px; font-size: 13px; }
+.section-title { font-size: 15px; font-weight: 600; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #3498db; color: #2c3e50; }
+.timestamp { text-align: center; color: #95a5a6; font-size: 13px; margin-bottom: 30px; }
+details { margin: 5px 0; }
+summary { cursor: pointer; color: #3498db; font-size: 13px; }
+.fill-result-row td:nth-child(4), .fill-result-row td:nth-child(5) {
+    max-width: 200px; word-break: break-all;
+}
+</style>
+<script>
+function toggleBody(el) {
+    const body = el.nextElementSibling;
+    if (body) body.classList.toggle('open');
+}
+function expandAll() {
+    document.querySelectorAll('.test-file-body').forEach(b => b.classList.add('open'));
+}
+function collapseAll() {
+    document.querySelectorAll('.test-file-body').forEach(b => b.classList.remove('open'));
+}
+</script>
+</head>
+<body>
+<div class="container">
+<h1>InduSpect 表單自動回填測試報告</h1>
+<p class="timestamp">產生時間: 2026-04-15 14:21:59 | 測試檔案: 14 個</p>
+
+<div class="summary">
+  <div class="summary-card"><div class="number" style="color:#27ae60">14</div><div class="label">通過 PASS</div></div>
+  <div class="summary-card"><div class="number" style="color:#f39c12">0</div><div class="label">部分 PARTIAL</div></div>
+  <div class="summary-card"><div class="number" style="color:#e74c3c">0</div><div class="label">失敗 FAIL</div></div>
+  <div class="summary-card"><div class="number" style="color:#f1c40f">0</div><div class="label">警告 WARN</div></div>
+  <div class="summary-card"><div class="number" style="color:#2c3e50">14</div><div class="label">總計</div></div>
+</div>
+
+<div style="text-align:center; margin: 15px 0;">
+  <button onclick="expandAll()" style="padding:6px 16px; cursor:pointer; border:1px solid #ccc; border-radius:4px; margin:0 5px;">全部展開</button>
+  <button onclick="collapseAll()" style="padding:6px 16px; cursor:pointer; border:1px solid #ccc; border-radius:4px; margin:0 5px;">全部收合</button>
+</div>
+
+
+<div class="level-section">
+  <div class="level-header" style="background: #27ae60; color: white;">
+    <span>Level 1：簡單 Key-Value 表 (2/2 通過)</span>
+    <span>⭐</span>
+  </div>
+  <div class="level-body">
+
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L1_simple_kv.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;13 欄位 | 12 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>13</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>12</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>1</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備基本檢查表</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_基本資料_A1</td>
+            <td><strong>設備基本檢查表</strong></td>
+            <td>text</td>
+            <td>基本資料/A1</td>
+            <td>基本資料/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A3</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>基本資料/A3</td>
+            <td>基本資料/B3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C3</td>
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td>基本資料/C3</td>
+            <td>基本資料/D3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A4</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>基本資料/A4</td>
+            <td>基本資料/B4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C4</td>
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td>基本資料/C4</td>
+            <td>基本資料/D4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A5</td>
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td>基本資料/A5</td>
+            <td>基本資料/B5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C5</td>
+            <td><strong>廠區</strong></td>
+            <td>text</td>
+            <td>基本資料/C5</td>
+            <td>基本資料/D5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A6</td>
+            <td><strong>溫度讀數</strong></td>
+            <td>number</td>
+            <td>基本資料/A6</td>
+            <td>基本資料/B6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C6</td>
+            <td><strong>電壓值</strong></td>
+            <td>number</td>
+            <td>基本資料/C6</td>
+            <td>基本資料/D6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A7</td>
+            <td><strong>轉速(RPM)</strong></td>
+            <td>number</td>
+            <td>基本資料/A7</td>
+            <td>基本資料/B7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C7</td>
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td>基本資料/C7</td>
+            <td>基本資料/D7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A8</td>
+            <td><strong>整體狀態</strong></td>
+            <td>text</td>
+            <td>基本資料/A8</td>
+            <td>基本資料/B8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_C8</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>基本資料/C8</td>
+            <td>基本資料/D8</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（12 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>B3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td><code>D3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>EQ-2026-0415</strong></td>
+            <td>EQ-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>B4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td><code>D4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td><code>B5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>B棟 3F 配電室</strong></td>
+            <td>B棟 3F 配電室</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>廠區</strong></td>
+            <td>text</td>
+            <td><code>D5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>南科廠區</strong></td>
+            <td>南科廠區</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>溫度讀數</strong></td>
+            <td>number</td>
+            <td><code>B6</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電壓值</strong></td>
+            <td>number</td>
+            <td><code>D6</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>382</strong></td>
+            <td>382</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>轉速(RPM)</strong></td>
+            <td>number</td>
+            <td><code>B7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>1480</strong></td>
+            <td>1480</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td><code>D7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>整體狀態</strong></td>
+            <td>text</td>
+            <td><code>B8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>正常</strong></td>
+            <td>正常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>D8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L1_simple_kv.docx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;13 欄位 | 12 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>DOCX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>13</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>12</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>1</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備基本檢查表</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>word_para_0</td>
+            <td><strong>設備基本檢查表</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r0_c0</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r0_c2</td>
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r1_c0</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r1_c2</td>
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r2_c0</td>
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r2_c2</td>
+            <td><strong>廠區</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r3_c0</td>
+            <td><strong>溫度讀數</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r3_c2</td>
+            <td><strong>電壓值</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r4_c0</td>
+            <td><strong>轉速(RPM)</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r4_c2</td>
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r5_c0</td>
+            <td><strong>整體狀態</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r5_c2</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（12 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>EQ-2026-0415</strong></td>
+            <td>EQ-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>B棟 3F 配電室</strong></td>
+            <td>B棟 3F 配電室</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>廠區</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>南科廠區</strong></td>
+            <td>南科廠區</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>溫度讀數</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電壓值</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>382</strong></td>
+            <td>382</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>轉速(RPM)</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>1480</strong></td>
+            <td>1480</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>整體狀態</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>正常</strong></td>
+            <td>正常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+</div></div>
+
+<div class="level-section">
+  <div class="level-header" style="background: #2ecc71; color: white;">
+    <span>Level 2：標準清單表 (2/2 通過)</span>
+    <span>⭐⭐</span>
+  </div>
+  <div class="level-body">
+
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L2_standard_list.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;11 欄位 | 9 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>11</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>9</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>2</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 電氣設備定期檢查清單, 檢查項目</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_檢查清單_A1</td>
+            <td><strong>電氣設備定期檢查清單</strong></td>
+            <td>text</td>
+            <td>檢查清單/A1</td>
+            <td>檢查清單/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A3</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>檢查清單/A3</td>
+            <td>檢查清單/B3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_D3</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>檢查清單/D3</td>
+            <td>檢查清單/D4</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A6</td>
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A6</td>
+            <td>檢查清單/B6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A7</td>
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A7</td>
+            <td>檢查清單/B7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A8</td>
+            <td><strong>C相電流(A)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A8</td>
+            <td>檢查清單/B8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A9</td>
+            <td><strong>漏電流(mA)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A9</td>
+            <td>檢查清單/B9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A10</td>
+            <td><strong>電壓(V)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A10</td>
+            <td>檢查清單/B10</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A11</td>
+            <td><strong>溫度(℃)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A11</td>
+            <td>檢查清單/B11</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A12</td>
+            <td><strong>噪音(dB)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A12</td>
+            <td>檢查清單/B12</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查清單_A13</td>
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td>檢查清單/A13</td>
+            <td>檢查清單/B13</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（9 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>D4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>B6</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.3</strong></td>
+            <td>12.3</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>B7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.1</strong></td>
+            <td>12.1</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>C相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>B8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.5</strong></td>
+            <td>12.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>漏電流(mA)</strong></td>
+            <td>number</td>
+            <td><code>B9</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>15</strong></td>
+            <td>15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電壓(V)</strong></td>
+            <td>number</td>
+            <td><code>B10</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>382</strong></td>
+            <td>382</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>溫度(℃)</strong></td>
+            <td>number</td>
+            <td><code>B11</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>噪音(dB)</strong></td>
+            <td>number</td>
+            <td><code>B12</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>72</strong></td>
+            <td>72</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td><code>B13</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L2_list_with_sections.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;9 欄位 | 4 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>9</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>4</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>5</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備安全定期檢查表, 檢查項目, 檢查結果, 正常動作, 正常</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_分段檢查表_A1</td>
+            <td><strong>設備安全定期檢查表</strong></td>
+            <td>text</td>
+            <td>分段檢查表/A1</td>
+            <td>分段檢查表/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_A3</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>分段檢查表/A3</td>
+            <td>分段檢查表/C3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_B3</td>
+            <td><strong>檢查結果</strong></td>
+            <td>text</td>
+            <td>分段檢查表/B3</td>
+            <td>分段檢查表/C3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_D3</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>分段檢查表/D3</td>
+            <td>分段檢查表/A4</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_C7</td>
+            <td><strong>正常動作</strong></td>
+            <td>checkbox</td>
+            <td>分段檢查表/C7</td>
+            <td>分段檢查表/D7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_A9</td>
+            <td><strong>軸承溫度</strong></td>
+            <td>number</td>
+            <td>分段檢查表/A9</td>
+            <td>分段檢查表/B9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_A10</td>
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td>分段檢查表/A10</td>
+            <td>分段檢查表/B10</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_C11</td>
+            <td><strong>正常</strong></td>
+            <td>checkbox</td>
+            <td>分段檢查表/C11</td>
+            <td>分段檢查表/D11</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_分段檢查表_A13</td>
+            <td><strong>噪音</strong></td>
+            <td>number</td>
+            <td>分段檢查表/A13</td>
+            <td>分段檢查表/B13</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（4 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>A4</code></td>
+            <td class="">一、電氣安全</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>軸承溫度</strong></td>
+            <td>number</td>
+            <td><code>B9</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動值</strong></td>
+            <td>number</td>
+            <td><code>B10</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>噪音</strong></td>
+            <td>number</td>
+            <td><code>B13</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>72</strong></td>
+            <td>72</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+</div></div>
+
+<div class="level-section">
+  <div class="level-header" style="background: #f39c12; color: white;">
+    <span>Level 3：混合結構表 (2/2 通過)</span>
+    <span>⭐⭐⭐</span>
+  </div>
+  <div class="level-body">
+
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L3_mixed_structure.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;17 欄位 | 15 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>17</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>15</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>2</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備定期檢查紀錄表, 檢查項目</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_混合檢查表_A1</td>
+            <td><strong>設備定期檢查紀錄表</strong></td>
+            <td>text</td>
+            <td>混合檢查表/A1</td>
+            <td>混合檢查表/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_A3</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>混合檢查表/A3</td>
+            <td>混合檢查表/B3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_D3</td>
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td>混合檢查表/D3</td>
+            <td>混合檢查表/E3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_A4</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>混合檢查表/A4</td>
+            <td>混合檢查表/B4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_D4</td>
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td>混合檢查表/D4</td>
+            <td>混合檢查表/E4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_A5</td>
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td>混合檢查表/A5</td>
+            <td>混合檢查表/B5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_D5</td>
+            <td><strong>所屬廠區</strong></td>
+            <td>text</td>
+            <td>混合檢查表/D5</td>
+            <td>混合檢查表/E5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_B7</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>混合檢查表/B7</td>
+            <td>混合檢查表/C7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_E7</td>
+            <td><strong>判定</strong></td>
+            <td>checkbox</td>
+            <td>混合檢查表/E7</td>
+            <td>混合檢查表/E8</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_F7</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>混合檢查表/F7</td>
+            <td>混合檢查表/F8</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_B10</td>
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td>混合檢查表/B10</td>
+            <td>混合檢查表/C10</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_B11</td>
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td>混合檢查表/B11</td>
+            <td>混合檢查表/C11</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_B12</td>
+            <td><strong>表面溫度(℃)</strong></td>
+            <td>number</td>
+            <td>混合檢查表/B12</td>
+            <td>混合檢查表/C12</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_B13</td>
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td>混合檢查表/B13</td>
+            <td>混合檢查表/C13</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_A15</td>
+            <td><strong>檢查人員簽章</strong></td>
+            <td>text</td>
+            <td>混合檢查表/A15</td>
+            <td>混合檢查表/B15</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_D15</td>
+            <td><strong>主管簽章</strong></td>
+            <td>text</td>
+            <td>混合檢查表/D15</td>
+            <td>混合檢查表/E15</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_混合檢查表_A16</td>
+            <td><strong>簽核日期</strong></td>
+            <td>date</td>
+            <td>混合檢查表/A16</td>
+            <td>混合檢查表/B16</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（15 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>B3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td><code>E3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>EQ-2026-0415</strong></td>
+            <td>EQ-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>B4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td><code>E4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td><code>B5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>B棟 3F 配電室</strong></td>
+            <td>B棟 3F 配電室</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>所屬廠區</strong></td>
+            <td>text</td>
+            <td><code>E5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>南科廠區</strong></td>
+            <td>南科廠區</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>判定</strong></td>
+            <td>checkbox</td>
+            <td><code>E8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>合格</strong></td>
+            <td>合格</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>F8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>C10</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.3</strong></td>
+            <td>12.3</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>C11</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.1</strong></td>
+            <td>12.1</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>表面溫度(℃)</strong></td>
+            <td>number</td>
+            <td><code>C12</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td><code>C13</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員簽章</strong></td>
+            <td>text</td>
+            <td><code>B15</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>主管簽章</strong></td>
+            <td>text</td>
+            <td><code>E15</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>李主管</strong></td>
+            <td>李主管</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>簽核日期</strong></td>
+            <td>date</td>
+            <td><code>B16</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L3_mixed_structure.docx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;16 欄位 | 13 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>DOCX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>16</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>13</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>3</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備定期檢查紀錄表, 檢查項目, 檢查項目</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>word_para_0</td>
+            <td><strong>設備定期檢查紀錄表</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_1</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_2</td>
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_3</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_4</td>
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_5</td>
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_7</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_10</td>
+            <td><strong>檢查人員簽章</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_11</td>
+            <td><strong>主管簽章</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_para_12</td>
+            <td><strong>簽核日期</strong></td>
+            <td>date</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r0_c0</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r0_c3</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r3_c0</td>
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r4_c0</td>
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r5_c0</td>
+            <td><strong>表面溫度(℃)</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r6_c0</td>
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（13 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>paragraph[1]</code></td>
+            <td class="">設備名稱：________________</td>
+            <td><strong>設備名稱： 三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備編號</strong></td>
+            <td>text</td>
+            <td><code>paragraph[2]</code></td>
+            <td class="">設備編號：________________</td>
+            <td><strong>設備編號： EQ-2026-0415</strong></td>
+            <td>EQ-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>paragraph[3]</code></td>
+            <td class="">檢查日期：________________</td>
+            <td><strong>檢查日期： 2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員</strong></td>
+            <td>text</td>
+            <td><code>paragraph[4]</code></td>
+            <td class="">檢查人員：________________</td>
+            <td><strong>檢查人員： 張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備位置</strong></td>
+            <td>text</td>
+            <td><code>paragraph[5]</code></td>
+            <td class="">設備位置：________________</td>
+            <td><strong>設備位置： B棟 3F 配電室</strong></td>
+            <td>B棟 3F 配電室</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查人員簽章</strong></td>
+            <td>text</td>
+            <td><code>paragraph[10]</code></td>
+            <td class="">檢查人員簽章：________________</td>
+            <td><strong>檢查人員簽章： 張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>主管簽章</strong></td>
+            <td>text</td>
+            <td><code>paragraph[11]</code></td>
+            <td class="">主管簽章：________________</td>
+            <td><strong>主管簽章： 李主管</strong></td>
+            <td>李主管</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>簽核日期</strong></td>
+            <td>date</td>
+            <td><code>paragraph[12]</code></td>
+            <td class="">簽核日期：________________</td>
+            <td><strong>簽核日期： 2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>A相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>12.3</strong></td>
+            <td>12.3</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>B相電流(A)</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>12.1</strong></td>
+            <td>12.1</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>表面溫度(℃)</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+</div></div>
+
+<div class="level-section">
+  <div class="level-header" style="background: #e67e22; color: white;">
+    <span>Level 4：合併儲存格 + 雙欄 Checkbox (3/3 通過)</span>
+    <span>⭐⭐⭐⭐</span>
+  </div>
+  <div class="level-body">
+
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L4_merged_cells.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;8 欄位 | 8 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>8</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>8</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>0</div>
+        </div>
+
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_合併格測試_A3</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>合併格測試/A3</td>
+            <td>合併格測試/C3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_E3</td>
+            <td><strong>編號</strong></td>
+            <td>text</td>
+            <td>合併格測試/E3</td>
+            <td>合併格測試/F3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_A4</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>合併格測試/A4</td>
+            <td>合併格測試/C4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_A5</td>
+            <td><strong>設備安裝位置與廠區說明</strong></td>
+            <td>text</td>
+            <td>合併格測試/A5</td>
+            <td>合併格測試/D5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_B7</td>
+            <td><strong>電壓(V)</strong></td>
+            <td>number</td>
+            <td>合併格測試/B7</td>
+            <td>合併格測試/C7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_E7</td>
+            <td><strong>溫度(℃)</strong></td>
+            <td>number</td>
+            <td>合併格測試/E7</td>
+            <td>合併格測試/F7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_B8</td>
+            <td><strong>電流(A)</strong></td>
+            <td>number</td>
+            <td>合併格測試/B8</td>
+            <td>合併格測試/C8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併格測試_E8</td>
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td>合併格測試/E8</td>
+            <td>合併格測試/F8</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（8 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>C3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>編號</strong></td>
+            <td>text</td>
+            <td><code>F3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>EQ-2026-0415</strong></td>
+            <td>EQ-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>C4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備安裝位置與廠區說明</strong></td>
+            <td>text</td>
+            <td><code>D5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>南科廠區</strong></td>
+            <td>南科廠區</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電壓(V)</strong></td>
+            <td>number</td>
+            <td><code>C7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>382</strong></td>
+            <td>382</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>溫度(℃)</strong></td>
+            <td>number</td>
+            <td><code>F7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電流(A)</strong></td>
+            <td>number</td>
+            <td><code>C8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>12.3</strong></td>
+            <td>12.3</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>振動(mm/s)</strong></td>
+            <td>number</td>
+            <td><code>F8</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>3.2</strong></td>
+            <td>3.2</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L4_dual_checkbox.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;8 欄位 | 4 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>8</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>4</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>4</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備定期檢查表（勾選式）, 檢查項目, 合格, 不合格</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_雙欄勾選_A1</td>
+            <td><strong>設備定期檢查表（勾選式）</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/A1</td>
+            <td>雙欄勾選/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_B3</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/B3</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_C3</td>
+            <td><strong>合格</strong></td>
+            <td>checkbox</td>
+            <td>雙欄勾選/C3</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_D3</td>
+            <td><strong>不合格</strong></td>
+            <td>checkbox</td>
+            <td>雙欄勾選/D3</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_E3</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/E3</td>
+            <td>雙欄勾選/E4</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_B7</td>
+            <td><strong>線路絕緣狀態</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/B7</td>
+            <td>雙欄勾選/C7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_B8</td>
+            <td><strong>電氣接點狀態</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/B8</td>
+            <td>雙欄勾選/C8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_雙欄勾選_B9</td>
+            <td><strong>防爆設備完整性</strong></td>
+            <td>text</td>
+            <td>雙欄勾選/B9</td>
+            <td>雙欄勾選/C9</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（4 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>E4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>線路絕緣狀態</strong></td>
+            <td>text</td>
+            <td><code>C7</code></td>
+            <td class="diff-empty">☐</td>
+            <td><strong>true</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>電氣接點狀態</strong></td>
+            <td>text</td>
+            <td><code>C8</code></td>
+            <td class="diff-empty">☐</td>
+            <td><strong>true</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>防爆設備完整性</strong></td>
+            <td>text</td>
+            <td><code>C9</code></td>
+            <td class="diff-empty">☐</td>
+            <td><strong>false</strong></td>
+            <td>false</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L4_merged_checkbox_combo.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;9 欄位 | 7 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>9</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>7</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>2</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 一、安全檢查項目, 檢查項目</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_合併勾選複合_A1</td>
+            <td><strong>設備安全檢查表（複合格式）</strong></td>
+            <td>checkbox</td>
+            <td>合併勾選複合/A1</td>
+            <td>合併勾選複合/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_A3</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>合併勾選複合/A3</td>
+            <td>合併勾選複合/C3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_E3</td>
+            <td><strong>日期</strong></td>
+            <td>date</td>
+            <td>合併勾選複合/E3</td>
+            <td>合併勾選複合/F3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_A5</td>
+            <td><strong>一、安全檢查項目</strong></td>
+            <td>text</td>
+            <td>合併勾選複合/A5</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_B6</td>
+            <td><strong>檢查項目</strong></td>
+            <td>text</td>
+            <td>合併勾選複合/B6</td>
+            <td>合併勾選複合/E6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_C6</td>
+            <td><strong>合格</strong></td>
+            <td>checkbox</td>
+            <td>合併勾選複合/C6</td>
+            <td>合併勾選複合/E6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_D6</td>
+            <td><strong>不合格</strong></td>
+            <td>checkbox</td>
+            <td>合併勾選複合/D6</td>
+            <td>合併勾選複合/E6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_F6</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>合併勾選複合/F6</td>
+            <td>合併勾選複合/F7</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_合併勾選複合_B10</td>
+            <td><strong>軸承狀態</strong></td>
+            <td>text</td>
+            <td>合併勾選複合/B10</td>
+            <td>合併勾選複合/C10</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（7 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備安全檢查表（複合格式）</strong></td>
+            <td>checkbox</td>
+            <td><code>A2</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>合格</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>C3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>日期</strong></td>
+            <td>date</td>
+            <td><code>F3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>合格</strong></td>
+            <td>checkbox</td>
+            <td><code>E6</code></td>
+            <td class="">量測值</td>
+            <td><strong>合格</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>不合格</strong></td>
+            <td>checkbox</td>
+            <td><code>E6</code></td>
+            <td class="">量測值</td>
+            <td><strong>合格</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>F7</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>軸承狀態</strong></td>
+            <td>text</td>
+            <td><code>C10</code></td>
+            <td class="diff-empty">☐</td>
+            <td><strong>true</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+</div></div>
+
+<div class="level-section">
+  <div class="level-header" style="background: #e74c3c; color: white;">
+    <span>Level 5：自由格式 / 非標準表 (5/5 通過)</span>
+    <span>⭐⭐⭐⭐⭐</span>
+  </div>
+  <div class="level-body">
+
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L5_nonstandard_labels.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;6 欄位 | 6 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>6</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>6</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>0</div>
+        </div>
+
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_NonStd_A3</td>
+            <td><strong>Equip. Name</strong></td>
+            <td>text</td>
+            <td>NonStd/A3</td>
+            <td>NonStd/B3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_NonStd_C3</td>
+            <td><strong>S/N</strong></td>
+            <td>text</td>
+            <td>NonStd/C3</td>
+            <td>NonStd/D3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_NonStd_A4</td>
+            <td><strong>Insp. Date</strong></td>
+            <td>date</td>
+            <td>NonStd/A4</td>
+            <td>NonStd/B4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_NonStd_C4</td>
+            <td><strong>Inspector</strong></td>
+            <td>text</td>
+            <td>NonStd/C4</td>
+            <td>NonStd/D4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_NonStd_A5</td>
+            <td><strong>Location</strong></td>
+            <td>text</td>
+            <td>NonStd/A5</td>
+            <td>NonStd/B5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_NonStd_C5</td>
+            <td><strong>Dept</strong></td>
+            <td>text</td>
+            <td>NonStd/C5</td>
+            <td>NonStd/D5</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（6 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>Equip. Name</strong></td>
+            <td>text</td>
+            <td><code>B3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>Motor A-01</strong></td>
+            <td>Motor A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>S/N</strong></td>
+            <td>text</td>
+            <td><code>D3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>SN-2026-0415</strong></td>
+            <td>SN-2026-0415</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>Insp. Date</strong></td>
+            <td>date</td>
+            <td><code>B4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>Inspector</strong></td>
+            <td>text</td>
+            <td><code>D4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>David Chang</strong></td>
+            <td>David Chang</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>Location</strong></td>
+            <td>text</td>
+            <td><code>B5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>Bldg-B 3F</strong></td>
+            <td>Bldg-B 3F</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>Dept</strong></td>
+            <td>text</td>
+            <td><code>D5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>Maintenance</strong></td>
+            <td>Maintenance</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L5_oversized.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;202 欄位 | 1 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>202</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>1</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>201</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 超大設備清單檢查表, 設備名稱, 檢查結果, 設備_001, 設備_002, 設備_003, 設備_004, 設備_005, 設備_006, 設備_007</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_超長表格_A1</td>
+            <td><strong>超大設備清單檢查表</strong></td>
+            <td>text</td>
+            <td>超長表格/A1</td>
+            <td>超長表格/B1</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B2</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>超長表格/B2</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_C2</td>
+            <td><strong>檢查結果</strong></td>
+            <td>text</td>
+            <td>超長表格/C2</td>
+            <td>超長表格/C3</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_D2</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>超長表格/D2</td>
+            <td>超長表格/D3</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B3</td>
+            <td><strong>設備_001</strong></td>
+            <td>text</td>
+            <td>超長表格/B3</td>
+            <td>超長表格/C3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B4</td>
+            <td><strong>設備_002</strong></td>
+            <td>text</td>
+            <td>超長表格/B4</td>
+            <td>超長表格/C4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B5</td>
+            <td><strong>設備_003</strong></td>
+            <td>text</td>
+            <td>超長表格/B5</td>
+            <td>超長表格/C5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B6</td>
+            <td><strong>設備_004</strong></td>
+            <td>text</td>
+            <td>超長表格/B6</td>
+            <td>超長表格/C6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B7</td>
+            <td><strong>設備_005</strong></td>
+            <td>text</td>
+            <td>超長表格/B7</td>
+            <td>超長表格/C7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B8</td>
+            <td><strong>設備_006</strong></td>
+            <td>text</td>
+            <td>超長表格/B8</td>
+            <td>超長表格/C8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B9</td>
+            <td><strong>設備_007</strong></td>
+            <td>text</td>
+            <td>超長表格/B9</td>
+            <td>超長表格/C9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B10</td>
+            <td><strong>設備_008</strong></td>
+            <td>text</td>
+            <td>超長表格/B10</td>
+            <td>超長表格/C10</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B11</td>
+            <td><strong>設備_009</strong></td>
+            <td>text</td>
+            <td>超長表格/B11</td>
+            <td>超長表格/C11</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B12</td>
+            <td><strong>設備_010</strong></td>
+            <td>text</td>
+            <td>超長表格/B12</td>
+            <td>超長表格/C12</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B13</td>
+            <td><strong>設備_011</strong></td>
+            <td>text</td>
+            <td>超長表格/B13</td>
+            <td>超長表格/C13</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B14</td>
+            <td><strong>設備_012</strong></td>
+            <td>text</td>
+            <td>超長表格/B14</td>
+            <td>超長表格/C14</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B15</td>
+            <td><strong>設備_013</strong></td>
+            <td>text</td>
+            <td>超長表格/B15</td>
+            <td>超長表格/C15</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B16</td>
+            <td><strong>設備_014</strong></td>
+            <td>text</td>
+            <td>超長表格/B16</td>
+            <td>超長表格/C16</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B17</td>
+            <td><strong>設備_015</strong></td>
+            <td>text</td>
+            <td>超長表格/B17</td>
+            <td>超長表格/C17</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B18</td>
+            <td><strong>設備_016</strong></td>
+            <td>text</td>
+            <td>超長表格/B18</td>
+            <td>超長表格/C18</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B19</td>
+            <td><strong>設備_017</strong></td>
+            <td>text</td>
+            <td>超長表格/B19</td>
+            <td>超長表格/C19</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B20</td>
+            <td><strong>設備_018</strong></td>
+            <td>text</td>
+            <td>超長表格/B20</td>
+            <td>超長表格/C20</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B21</td>
+            <td><strong>設備_019</strong></td>
+            <td>text</td>
+            <td>超長表格/B21</td>
+            <td>超長表格/C21</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B22</td>
+            <td><strong>設備_020</strong></td>
+            <td>text</td>
+            <td>超長表格/B22</td>
+            <td>超長表格/C22</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B23</td>
+            <td><strong>設備_021</strong></td>
+            <td>text</td>
+            <td>超長表格/B23</td>
+            <td>超長表格/C23</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B24</td>
+            <td><strong>設備_022</strong></td>
+            <td>text</td>
+            <td>超長表格/B24</td>
+            <td>超長表格/C24</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B25</td>
+            <td><strong>設備_023</strong></td>
+            <td>text</td>
+            <td>超長表格/B25</td>
+            <td>超長表格/C25</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B26</td>
+            <td><strong>設備_024</strong></td>
+            <td>text</td>
+            <td>超長表格/B26</td>
+            <td>超長表格/C26</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B27</td>
+            <td><strong>設備_025</strong></td>
+            <td>text</td>
+            <td>超長表格/B27</td>
+            <td>超長表格/C27</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B28</td>
+            <td><strong>設備_026</strong></td>
+            <td>text</td>
+            <td>超長表格/B28</td>
+            <td>超長表格/C28</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B29</td>
+            <td><strong>設備_027</strong></td>
+            <td>text</td>
+            <td>超長表格/B29</td>
+            <td>超長表格/C29</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B30</td>
+            <td><strong>設備_028</strong></td>
+            <td>text</td>
+            <td>超長表格/B30</td>
+            <td>超長表格/C30</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B31</td>
+            <td><strong>設備_029</strong></td>
+            <td>text</td>
+            <td>超長表格/B31</td>
+            <td>超長表格/C31</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B32</td>
+            <td><strong>設備_030</strong></td>
+            <td>text</td>
+            <td>超長表格/B32</td>
+            <td>超長表格/C32</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B33</td>
+            <td><strong>設備_031</strong></td>
+            <td>text</td>
+            <td>超長表格/B33</td>
+            <td>超長表格/C33</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B34</td>
+            <td><strong>設備_032</strong></td>
+            <td>text</td>
+            <td>超長表格/B34</td>
+            <td>超長表格/C34</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B35</td>
+            <td><strong>設備_033</strong></td>
+            <td>text</td>
+            <td>超長表格/B35</td>
+            <td>超長表格/C35</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B36</td>
+            <td><strong>設備_034</strong></td>
+            <td>text</td>
+            <td>超長表格/B36</td>
+            <td>超長表格/C36</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B37</td>
+            <td><strong>設備_035</strong></td>
+            <td>text</td>
+            <td>超長表格/B37</td>
+            <td>超長表格/C37</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B38</td>
+            <td><strong>設備_036</strong></td>
+            <td>text</td>
+            <td>超長表格/B38</td>
+            <td>超長表格/C38</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B39</td>
+            <td><strong>設備_037</strong></td>
+            <td>text</td>
+            <td>超長表格/B39</td>
+            <td>超長表格/C39</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B40</td>
+            <td><strong>設備_038</strong></td>
+            <td>text</td>
+            <td>超長表格/B40</td>
+            <td>超長表格/C40</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B41</td>
+            <td><strong>設備_039</strong></td>
+            <td>text</td>
+            <td>超長表格/B41</td>
+            <td>超長表格/C41</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B42</td>
+            <td><strong>設備_040</strong></td>
+            <td>text</td>
+            <td>超長表格/B42</td>
+            <td>超長表格/C42</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B43</td>
+            <td><strong>設備_041</strong></td>
+            <td>text</td>
+            <td>超長表格/B43</td>
+            <td>超長表格/C43</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B44</td>
+            <td><strong>設備_042</strong></td>
+            <td>text</td>
+            <td>超長表格/B44</td>
+            <td>超長表格/C44</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B45</td>
+            <td><strong>設備_043</strong></td>
+            <td>text</td>
+            <td>超長表格/B45</td>
+            <td>超長表格/C45</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B46</td>
+            <td><strong>設備_044</strong></td>
+            <td>text</td>
+            <td>超長表格/B46</td>
+            <td>超長表格/C46</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B47</td>
+            <td><strong>設備_045</strong></td>
+            <td>text</td>
+            <td>超長表格/B47</td>
+            <td>超長表格/C47</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B48</td>
+            <td><strong>設備_046</strong></td>
+            <td>text</td>
+            <td>超長表格/B48</td>
+            <td>超長表格/C48</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B49</td>
+            <td><strong>設備_047</strong></td>
+            <td>text</td>
+            <td>超長表格/B49</td>
+            <td>超長表格/C49</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B50</td>
+            <td><strong>設備_048</strong></td>
+            <td>text</td>
+            <td>超長表格/B50</td>
+            <td>超長表格/C50</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B51</td>
+            <td><strong>設備_049</strong></td>
+            <td>text</td>
+            <td>超長表格/B51</td>
+            <td>超長表格/C51</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B52</td>
+            <td><strong>設備_050</strong></td>
+            <td>text</td>
+            <td>超長表格/B52</td>
+            <td>超長表格/C52</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B53</td>
+            <td><strong>設備_051</strong></td>
+            <td>text</td>
+            <td>超長表格/B53</td>
+            <td>超長表格/C53</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B54</td>
+            <td><strong>設備_052</strong></td>
+            <td>text</td>
+            <td>超長表格/B54</td>
+            <td>超長表格/C54</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B55</td>
+            <td><strong>設備_053</strong></td>
+            <td>text</td>
+            <td>超長表格/B55</td>
+            <td>超長表格/C55</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B56</td>
+            <td><strong>設備_054</strong></td>
+            <td>text</td>
+            <td>超長表格/B56</td>
+            <td>超長表格/C56</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B57</td>
+            <td><strong>設備_055</strong></td>
+            <td>text</td>
+            <td>超長表格/B57</td>
+            <td>超長表格/C57</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B58</td>
+            <td><strong>設備_056</strong></td>
+            <td>text</td>
+            <td>超長表格/B58</td>
+            <td>超長表格/C58</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B59</td>
+            <td><strong>設備_057</strong></td>
+            <td>text</td>
+            <td>超長表格/B59</td>
+            <td>超長表格/C59</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B60</td>
+            <td><strong>設備_058</strong></td>
+            <td>text</td>
+            <td>超長表格/B60</td>
+            <td>超長表格/C60</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B61</td>
+            <td><strong>設備_059</strong></td>
+            <td>text</td>
+            <td>超長表格/B61</td>
+            <td>超長表格/C61</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B62</td>
+            <td><strong>設備_060</strong></td>
+            <td>text</td>
+            <td>超長表格/B62</td>
+            <td>超長表格/C62</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B63</td>
+            <td><strong>設備_061</strong></td>
+            <td>text</td>
+            <td>超長表格/B63</td>
+            <td>超長表格/C63</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B64</td>
+            <td><strong>設備_062</strong></td>
+            <td>text</td>
+            <td>超長表格/B64</td>
+            <td>超長表格/C64</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B65</td>
+            <td><strong>設備_063</strong></td>
+            <td>text</td>
+            <td>超長表格/B65</td>
+            <td>超長表格/C65</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B66</td>
+            <td><strong>設備_064</strong></td>
+            <td>text</td>
+            <td>超長表格/B66</td>
+            <td>超長表格/C66</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B67</td>
+            <td><strong>設備_065</strong></td>
+            <td>text</td>
+            <td>超長表格/B67</td>
+            <td>超長表格/C67</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B68</td>
+            <td><strong>設備_066</strong></td>
+            <td>text</td>
+            <td>超長表格/B68</td>
+            <td>超長表格/C68</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B69</td>
+            <td><strong>設備_067</strong></td>
+            <td>text</td>
+            <td>超長表格/B69</td>
+            <td>超長表格/C69</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B70</td>
+            <td><strong>設備_068</strong></td>
+            <td>text</td>
+            <td>超長表格/B70</td>
+            <td>超長表格/C70</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B71</td>
+            <td><strong>設備_069</strong></td>
+            <td>text</td>
+            <td>超長表格/B71</td>
+            <td>超長表格/C71</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B72</td>
+            <td><strong>設備_070</strong></td>
+            <td>text</td>
+            <td>超長表格/B72</td>
+            <td>超長表格/C72</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B73</td>
+            <td><strong>設備_071</strong></td>
+            <td>text</td>
+            <td>超長表格/B73</td>
+            <td>超長表格/C73</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B74</td>
+            <td><strong>設備_072</strong></td>
+            <td>text</td>
+            <td>超長表格/B74</td>
+            <td>超長表格/C74</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B75</td>
+            <td><strong>設備_073</strong></td>
+            <td>text</td>
+            <td>超長表格/B75</td>
+            <td>超長表格/C75</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B76</td>
+            <td><strong>設備_074</strong></td>
+            <td>text</td>
+            <td>超長表格/B76</td>
+            <td>超長表格/C76</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B77</td>
+            <td><strong>設備_075</strong></td>
+            <td>text</td>
+            <td>超長表格/B77</td>
+            <td>超長表格/C77</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B78</td>
+            <td><strong>設備_076</strong></td>
+            <td>text</td>
+            <td>超長表格/B78</td>
+            <td>超長表格/C78</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B79</td>
+            <td><strong>設備_077</strong></td>
+            <td>text</td>
+            <td>超長表格/B79</td>
+            <td>超長表格/C79</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B80</td>
+            <td><strong>設備_078</strong></td>
+            <td>text</td>
+            <td>超長表格/B80</td>
+            <td>超長表格/C80</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B81</td>
+            <td><strong>設備_079</strong></td>
+            <td>text</td>
+            <td>超長表格/B81</td>
+            <td>超長表格/C81</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B82</td>
+            <td><strong>設備_080</strong></td>
+            <td>text</td>
+            <td>超長表格/B82</td>
+            <td>超長表格/C82</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B83</td>
+            <td><strong>設備_081</strong></td>
+            <td>text</td>
+            <td>超長表格/B83</td>
+            <td>超長表格/C83</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B84</td>
+            <td><strong>設備_082</strong></td>
+            <td>text</td>
+            <td>超長表格/B84</td>
+            <td>超長表格/C84</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B85</td>
+            <td><strong>設備_083</strong></td>
+            <td>text</td>
+            <td>超長表格/B85</td>
+            <td>超長表格/C85</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B86</td>
+            <td><strong>設備_084</strong></td>
+            <td>text</td>
+            <td>超長表格/B86</td>
+            <td>超長表格/C86</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B87</td>
+            <td><strong>設備_085</strong></td>
+            <td>text</td>
+            <td>超長表格/B87</td>
+            <td>超長表格/C87</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B88</td>
+            <td><strong>設備_086</strong></td>
+            <td>text</td>
+            <td>超長表格/B88</td>
+            <td>超長表格/C88</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B89</td>
+            <td><strong>設備_087</strong></td>
+            <td>text</td>
+            <td>超長表格/B89</td>
+            <td>超長表格/C89</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B90</td>
+            <td><strong>設備_088</strong></td>
+            <td>text</td>
+            <td>超長表格/B90</td>
+            <td>超長表格/C90</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B91</td>
+            <td><strong>設備_089</strong></td>
+            <td>text</td>
+            <td>超長表格/B91</td>
+            <td>超長表格/C91</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B92</td>
+            <td><strong>設備_090</strong></td>
+            <td>text</td>
+            <td>超長表格/B92</td>
+            <td>超長表格/C92</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B93</td>
+            <td><strong>設備_091</strong></td>
+            <td>text</td>
+            <td>超長表格/B93</td>
+            <td>超長表格/C93</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B94</td>
+            <td><strong>設備_092</strong></td>
+            <td>text</td>
+            <td>超長表格/B94</td>
+            <td>超長表格/C94</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B95</td>
+            <td><strong>設備_093</strong></td>
+            <td>text</td>
+            <td>超長表格/B95</td>
+            <td>超長表格/C95</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B96</td>
+            <td><strong>設備_094</strong></td>
+            <td>text</td>
+            <td>超長表格/B96</td>
+            <td>超長表格/C96</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B97</td>
+            <td><strong>設備_095</strong></td>
+            <td>text</td>
+            <td>超長表格/B97</td>
+            <td>超長表格/C97</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B98</td>
+            <td><strong>設備_096</strong></td>
+            <td>text</td>
+            <td>超長表格/B98</td>
+            <td>超長表格/C98</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B99</td>
+            <td><strong>設備_097</strong></td>
+            <td>text</td>
+            <td>超長表格/B99</td>
+            <td>超長表格/C99</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B100</td>
+            <td><strong>設備_098</strong></td>
+            <td>text</td>
+            <td>超長表格/B100</td>
+            <td>超長表格/C100</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B101</td>
+            <td><strong>設備_099</strong></td>
+            <td>text</td>
+            <td>超長表格/B101</td>
+            <td>超長表格/C101</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B102</td>
+            <td><strong>設備_100</strong></td>
+            <td>text</td>
+            <td>超長表格/B102</td>
+            <td>超長表格/C102</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B103</td>
+            <td><strong>設備_101</strong></td>
+            <td>text</td>
+            <td>超長表格/B103</td>
+            <td>超長表格/C103</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B104</td>
+            <td><strong>設備_102</strong></td>
+            <td>text</td>
+            <td>超長表格/B104</td>
+            <td>超長表格/C104</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B105</td>
+            <td><strong>設備_103</strong></td>
+            <td>text</td>
+            <td>超長表格/B105</td>
+            <td>超長表格/C105</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B106</td>
+            <td><strong>設備_104</strong></td>
+            <td>text</td>
+            <td>超長表格/B106</td>
+            <td>超長表格/C106</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B107</td>
+            <td><strong>設備_105</strong></td>
+            <td>text</td>
+            <td>超長表格/B107</td>
+            <td>超長表格/C107</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B108</td>
+            <td><strong>設備_106</strong></td>
+            <td>text</td>
+            <td>超長表格/B108</td>
+            <td>超長表格/C108</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B109</td>
+            <td><strong>設備_107</strong></td>
+            <td>text</td>
+            <td>超長表格/B109</td>
+            <td>超長表格/C109</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B110</td>
+            <td><strong>設備_108</strong></td>
+            <td>text</td>
+            <td>超長表格/B110</td>
+            <td>超長表格/C110</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B111</td>
+            <td><strong>設備_109</strong></td>
+            <td>text</td>
+            <td>超長表格/B111</td>
+            <td>超長表格/C111</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B112</td>
+            <td><strong>設備_110</strong></td>
+            <td>text</td>
+            <td>超長表格/B112</td>
+            <td>超長表格/C112</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B113</td>
+            <td><strong>設備_111</strong></td>
+            <td>text</td>
+            <td>超長表格/B113</td>
+            <td>超長表格/C113</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B114</td>
+            <td><strong>設備_112</strong></td>
+            <td>text</td>
+            <td>超長表格/B114</td>
+            <td>超長表格/C114</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B115</td>
+            <td><strong>設備_113</strong></td>
+            <td>text</td>
+            <td>超長表格/B115</td>
+            <td>超長表格/C115</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B116</td>
+            <td><strong>設備_114</strong></td>
+            <td>text</td>
+            <td>超長表格/B116</td>
+            <td>超長表格/C116</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B117</td>
+            <td><strong>設備_115</strong></td>
+            <td>text</td>
+            <td>超長表格/B117</td>
+            <td>超長表格/C117</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B118</td>
+            <td><strong>設備_116</strong></td>
+            <td>text</td>
+            <td>超長表格/B118</td>
+            <td>超長表格/C118</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B119</td>
+            <td><strong>設備_117</strong></td>
+            <td>text</td>
+            <td>超長表格/B119</td>
+            <td>超長表格/C119</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B120</td>
+            <td><strong>設備_118</strong></td>
+            <td>text</td>
+            <td>超長表格/B120</td>
+            <td>超長表格/C120</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B121</td>
+            <td><strong>設備_119</strong></td>
+            <td>text</td>
+            <td>超長表格/B121</td>
+            <td>超長表格/C121</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B122</td>
+            <td><strong>設備_120</strong></td>
+            <td>text</td>
+            <td>超長表格/B122</td>
+            <td>超長表格/C122</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B123</td>
+            <td><strong>設備_121</strong></td>
+            <td>text</td>
+            <td>超長表格/B123</td>
+            <td>超長表格/C123</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B124</td>
+            <td><strong>設備_122</strong></td>
+            <td>text</td>
+            <td>超長表格/B124</td>
+            <td>超長表格/C124</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B125</td>
+            <td><strong>設備_123</strong></td>
+            <td>text</td>
+            <td>超長表格/B125</td>
+            <td>超長表格/C125</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B126</td>
+            <td><strong>設備_124</strong></td>
+            <td>text</td>
+            <td>超長表格/B126</td>
+            <td>超長表格/C126</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B127</td>
+            <td><strong>設備_125</strong></td>
+            <td>text</td>
+            <td>超長表格/B127</td>
+            <td>超長表格/C127</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B128</td>
+            <td><strong>設備_126</strong></td>
+            <td>text</td>
+            <td>超長表格/B128</td>
+            <td>超長表格/C128</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B129</td>
+            <td><strong>設備_127</strong></td>
+            <td>text</td>
+            <td>超長表格/B129</td>
+            <td>超長表格/C129</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B130</td>
+            <td><strong>設備_128</strong></td>
+            <td>text</td>
+            <td>超長表格/B130</td>
+            <td>超長表格/C130</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B131</td>
+            <td><strong>設備_129</strong></td>
+            <td>text</td>
+            <td>超長表格/B131</td>
+            <td>超長表格/C131</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B132</td>
+            <td><strong>設備_130</strong></td>
+            <td>text</td>
+            <td>超長表格/B132</td>
+            <td>超長表格/C132</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B133</td>
+            <td><strong>設備_131</strong></td>
+            <td>text</td>
+            <td>超長表格/B133</td>
+            <td>超長表格/C133</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B134</td>
+            <td><strong>設備_132</strong></td>
+            <td>text</td>
+            <td>超長表格/B134</td>
+            <td>超長表格/C134</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B135</td>
+            <td><strong>設備_133</strong></td>
+            <td>text</td>
+            <td>超長表格/B135</td>
+            <td>超長表格/C135</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B136</td>
+            <td><strong>設備_134</strong></td>
+            <td>text</td>
+            <td>超長表格/B136</td>
+            <td>超長表格/C136</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B137</td>
+            <td><strong>設備_135</strong></td>
+            <td>text</td>
+            <td>超長表格/B137</td>
+            <td>超長表格/C137</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B138</td>
+            <td><strong>設備_136</strong></td>
+            <td>text</td>
+            <td>超長表格/B138</td>
+            <td>超長表格/C138</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B139</td>
+            <td><strong>設備_137</strong></td>
+            <td>text</td>
+            <td>超長表格/B139</td>
+            <td>超長表格/C139</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B140</td>
+            <td><strong>設備_138</strong></td>
+            <td>text</td>
+            <td>超長表格/B140</td>
+            <td>超長表格/C140</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B141</td>
+            <td><strong>設備_139</strong></td>
+            <td>text</td>
+            <td>超長表格/B141</td>
+            <td>超長表格/C141</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B142</td>
+            <td><strong>設備_140</strong></td>
+            <td>text</td>
+            <td>超長表格/B142</td>
+            <td>超長表格/C142</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B143</td>
+            <td><strong>設備_141</strong></td>
+            <td>text</td>
+            <td>超長表格/B143</td>
+            <td>超長表格/C143</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B144</td>
+            <td><strong>設備_142</strong></td>
+            <td>text</td>
+            <td>超長表格/B144</td>
+            <td>超長表格/C144</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B145</td>
+            <td><strong>設備_143</strong></td>
+            <td>text</td>
+            <td>超長表格/B145</td>
+            <td>超長表格/C145</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B146</td>
+            <td><strong>設備_144</strong></td>
+            <td>text</td>
+            <td>超長表格/B146</td>
+            <td>超長表格/C146</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B147</td>
+            <td><strong>設備_145</strong></td>
+            <td>text</td>
+            <td>超長表格/B147</td>
+            <td>超長表格/C147</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B148</td>
+            <td><strong>設備_146</strong></td>
+            <td>text</td>
+            <td>超長表格/B148</td>
+            <td>超長表格/C148</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B149</td>
+            <td><strong>設備_147</strong></td>
+            <td>text</td>
+            <td>超長表格/B149</td>
+            <td>超長表格/C149</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B150</td>
+            <td><strong>設備_148</strong></td>
+            <td>text</td>
+            <td>超長表格/B150</td>
+            <td>超長表格/C150</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B151</td>
+            <td><strong>設備_149</strong></td>
+            <td>text</td>
+            <td>超長表格/B151</td>
+            <td>超長表格/C151</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B152</td>
+            <td><strong>設備_150</strong></td>
+            <td>text</td>
+            <td>超長表格/B152</td>
+            <td>超長表格/C152</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B153</td>
+            <td><strong>設備_151</strong></td>
+            <td>text</td>
+            <td>超長表格/B153</td>
+            <td>超長表格/C153</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B154</td>
+            <td><strong>設備_152</strong></td>
+            <td>text</td>
+            <td>超長表格/B154</td>
+            <td>超長表格/C154</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B155</td>
+            <td><strong>設備_153</strong></td>
+            <td>text</td>
+            <td>超長表格/B155</td>
+            <td>超長表格/C155</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B156</td>
+            <td><strong>設備_154</strong></td>
+            <td>text</td>
+            <td>超長表格/B156</td>
+            <td>超長表格/C156</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B157</td>
+            <td><strong>設備_155</strong></td>
+            <td>text</td>
+            <td>超長表格/B157</td>
+            <td>超長表格/C157</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B158</td>
+            <td><strong>設備_156</strong></td>
+            <td>text</td>
+            <td>超長表格/B158</td>
+            <td>超長表格/C158</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B159</td>
+            <td><strong>設備_157</strong></td>
+            <td>text</td>
+            <td>超長表格/B159</td>
+            <td>超長表格/C159</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B160</td>
+            <td><strong>設備_158</strong></td>
+            <td>text</td>
+            <td>超長表格/B160</td>
+            <td>超長表格/C160</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B161</td>
+            <td><strong>設備_159</strong></td>
+            <td>text</td>
+            <td>超長表格/B161</td>
+            <td>超長表格/C161</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B162</td>
+            <td><strong>設備_160</strong></td>
+            <td>text</td>
+            <td>超長表格/B162</td>
+            <td>超長表格/C162</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B163</td>
+            <td><strong>設備_161</strong></td>
+            <td>text</td>
+            <td>超長表格/B163</td>
+            <td>超長表格/C163</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B164</td>
+            <td><strong>設備_162</strong></td>
+            <td>text</td>
+            <td>超長表格/B164</td>
+            <td>超長表格/C164</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B165</td>
+            <td><strong>設備_163</strong></td>
+            <td>text</td>
+            <td>超長表格/B165</td>
+            <td>超長表格/C165</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B166</td>
+            <td><strong>設備_164</strong></td>
+            <td>text</td>
+            <td>超長表格/B166</td>
+            <td>超長表格/C166</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B167</td>
+            <td><strong>設備_165</strong></td>
+            <td>text</td>
+            <td>超長表格/B167</td>
+            <td>超長表格/C167</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B168</td>
+            <td><strong>設備_166</strong></td>
+            <td>text</td>
+            <td>超長表格/B168</td>
+            <td>超長表格/C168</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B169</td>
+            <td><strong>設備_167</strong></td>
+            <td>text</td>
+            <td>超長表格/B169</td>
+            <td>超長表格/C169</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B170</td>
+            <td><strong>設備_168</strong></td>
+            <td>text</td>
+            <td>超長表格/B170</td>
+            <td>超長表格/C170</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B171</td>
+            <td><strong>設備_169</strong></td>
+            <td>text</td>
+            <td>超長表格/B171</td>
+            <td>超長表格/C171</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B172</td>
+            <td><strong>設備_170</strong></td>
+            <td>text</td>
+            <td>超長表格/B172</td>
+            <td>超長表格/C172</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B173</td>
+            <td><strong>設備_171</strong></td>
+            <td>text</td>
+            <td>超長表格/B173</td>
+            <td>超長表格/C173</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B174</td>
+            <td><strong>設備_172</strong></td>
+            <td>text</td>
+            <td>超長表格/B174</td>
+            <td>超長表格/C174</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B175</td>
+            <td><strong>設備_173</strong></td>
+            <td>text</td>
+            <td>超長表格/B175</td>
+            <td>超長表格/C175</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B176</td>
+            <td><strong>設備_174</strong></td>
+            <td>text</td>
+            <td>超長表格/B176</td>
+            <td>超長表格/C176</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B177</td>
+            <td><strong>設備_175</strong></td>
+            <td>text</td>
+            <td>超長表格/B177</td>
+            <td>超長表格/C177</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B178</td>
+            <td><strong>設備_176</strong></td>
+            <td>text</td>
+            <td>超長表格/B178</td>
+            <td>超長表格/C178</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B179</td>
+            <td><strong>設備_177</strong></td>
+            <td>text</td>
+            <td>超長表格/B179</td>
+            <td>超長表格/C179</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B180</td>
+            <td><strong>設備_178</strong></td>
+            <td>text</td>
+            <td>超長表格/B180</td>
+            <td>超長表格/C180</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B181</td>
+            <td><strong>設備_179</strong></td>
+            <td>text</td>
+            <td>超長表格/B181</td>
+            <td>超長表格/C181</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B182</td>
+            <td><strong>設備_180</strong></td>
+            <td>text</td>
+            <td>超長表格/B182</td>
+            <td>超長表格/C182</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B183</td>
+            <td><strong>設備_181</strong></td>
+            <td>text</td>
+            <td>超長表格/B183</td>
+            <td>超長表格/C183</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B184</td>
+            <td><strong>設備_182</strong></td>
+            <td>text</td>
+            <td>超長表格/B184</td>
+            <td>超長表格/C184</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B185</td>
+            <td><strong>設備_183</strong></td>
+            <td>text</td>
+            <td>超長表格/B185</td>
+            <td>超長表格/C185</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B186</td>
+            <td><strong>設備_184</strong></td>
+            <td>text</td>
+            <td>超長表格/B186</td>
+            <td>超長表格/C186</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B187</td>
+            <td><strong>設備_185</strong></td>
+            <td>text</td>
+            <td>超長表格/B187</td>
+            <td>超長表格/C187</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B188</td>
+            <td><strong>設備_186</strong></td>
+            <td>text</td>
+            <td>超長表格/B188</td>
+            <td>超長表格/C188</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B189</td>
+            <td><strong>設備_187</strong></td>
+            <td>text</td>
+            <td>超長表格/B189</td>
+            <td>超長表格/C189</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B190</td>
+            <td><strong>設備_188</strong></td>
+            <td>text</td>
+            <td>超長表格/B190</td>
+            <td>超長表格/C190</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B191</td>
+            <td><strong>設備_189</strong></td>
+            <td>text</td>
+            <td>超長表格/B191</td>
+            <td>超長表格/C191</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B192</td>
+            <td><strong>設備_190</strong></td>
+            <td>text</td>
+            <td>超長表格/B192</td>
+            <td>超長表格/C192</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B193</td>
+            <td><strong>設備_191</strong></td>
+            <td>text</td>
+            <td>超長表格/B193</td>
+            <td>超長表格/C193</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B194</td>
+            <td><strong>設備_192</strong></td>
+            <td>text</td>
+            <td>超長表格/B194</td>
+            <td>超長表格/C194</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B195</td>
+            <td><strong>設備_193</strong></td>
+            <td>text</td>
+            <td>超長表格/B195</td>
+            <td>超長表格/C195</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B196</td>
+            <td><strong>設備_194</strong></td>
+            <td>text</td>
+            <td>超長表格/B196</td>
+            <td>超長表格/C196</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B197</td>
+            <td><strong>設備_195</strong></td>
+            <td>text</td>
+            <td>超長表格/B197</td>
+            <td>超長表格/C197</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B198</td>
+            <td><strong>設備_196</strong></td>
+            <td>text</td>
+            <td>超長表格/B198</td>
+            <td>超長表格/C198</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B199</td>
+            <td><strong>設備_197</strong></td>
+            <td>text</td>
+            <td>超長表格/B199</td>
+            <td>超長表格/C199</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_超長表格_B200</td>
+            <td><strong>設備_198</strong></td>
+            <td>text</td>
+            <td>超長表格/B200</td>
+            <td>超長表格/C200</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（1 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>D3</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L5_multi_sheet.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;13 欄位 | 4 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>13</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>4</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>9</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 結果, 檢查項_1, 檢查項_2, 檢查項_3, 檢查項_4, 檢查項_5, 檢查項_6, 複檢日期, 複檢結果</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_基本資料_A1</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>基本資料/A1</td>
+            <td>基本資料/B1</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_基本資料_A2</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>基本資料/A2</td>
+            <td>基本資料/B2</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_B1</td>
+            <td><strong>結果</strong></td>
+            <td>text</td>
+            <td>檢查項目/B1</td>
+            <td>檢查項目/B2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_C1</td>
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td>檢查項目/C1</td>
+            <td>檢查項目/C2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A2</td>
+            <td><strong>檢查項_1</strong></td>
+            <td>text</td>
+            <td>檢查項目/A2</td>
+            <td>檢查項目/B2</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A3</td>
+            <td><strong>檢查項_2</strong></td>
+            <td>text</td>
+            <td>檢查項目/A3</td>
+            <td>檢查項目/B3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A4</td>
+            <td><strong>檢查項_3</strong></td>
+            <td>text</td>
+            <td>檢查項目/A4</td>
+            <td>檢查項目/B4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A5</td>
+            <td><strong>檢查項_4</strong></td>
+            <td>text</td>
+            <td>檢查項目/A5</td>
+            <td>檢查項目/B5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A6</td>
+            <td><strong>檢查項_5</strong></td>
+            <td>text</td>
+            <td>檢查項目/A6</td>
+            <td>檢查項目/B6</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_檢查項目_A7</td>
+            <td><strong>檢查項_6</strong></td>
+            <td>text</td>
+            <td>檢查項目/A7</td>
+            <td>檢查項目/B7</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_複檢紀錄_A1</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>複檢紀錄/A1</td>
+            <td>複檢紀錄/B1</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_複檢紀錄_A2</td>
+            <td><strong>複檢日期</strong></td>
+            <td>date</td>
+            <td>複檢紀錄/A2</td>
+            <td>複檢紀錄/B2</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_複檢紀錄_A3</td>
+            <td><strong>複檢結果</strong></td>
+            <td>text</td>
+            <td>複檢紀錄/A3</td>
+            <td>複檢紀錄/B3</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（4 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>B1</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>B2</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>備註</strong></td>
+            <td>text</td>
+            <td><code>C2</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>例行檢查，無異常</strong></td>
+            <td>例行檢查，無異常</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>B1</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L5_nested_table.docx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;5 欄位 | 3 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>DOCX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>5</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>3</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>2</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 設備檢查表（嵌套格式）, 詳細檢查紀錄</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>word_para_0</td>
+            <td><strong>設備檢查表（嵌套格式）</strong></td>
+            <td>text</td>
+            <td>paragraph</td>
+            <td>paragraph</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r0_c0</td>
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r1_c0</td>
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r2_c0</td>
+            <td><strong>詳細檢查紀錄</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>word_t0_r3_c0</td>
+            <td><strong>簽核</strong></td>
+            <td>text</td>
+            <td>table</td>
+            <td>table</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（3 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>設備名稱</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>三相感應馬達 A-01</strong></td>
+            <td>三相感應馬達 A-01</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>檢查日期</strong></td>
+            <td>date</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>簽核</strong></td>
+            <td>text</td>
+            <td><code>table[0]</code></td>
+            <td class="diff-empty">____</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+
+    <div class="test-file">
+      <div class="test-file-header" onclick="toggleBody(this)">
+        <span>✅ L5_irregular_merge.xlsx</span>
+        <span>
+          <span class="badge" style="background:#27ae60">PASS</span>
+          &nbsp;11 欄位 | 6 填入
+        </span>
+      </div>
+      <div class="test-file-body">
+
+
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">檔案格式</span><br>XLSX</div>
+          <div class="info-item"><span class="info-label">偵測欄位數</span><br>11</div>
+          <div class="info-item"><span class="info-label">成功填入數</span><br>6</div>
+          <div class="info-item"><span class="info-label">未配對數</span><br>5</div>
+        </div>
+
+<div class="warn-box">⚠️ 以下欄位無對應 mock 資料: 複雜格式設備巡檢表, 設備基本資訊, 檢查資訊, 名稱/
+編號, 數值</div>
+<div class="section-title">欄位偵測結果（Field Map）</div>
+
+        <table class="field-map-table">
+          <tr><th>Field ID</th><th>欄位名稱</th><th>類型</th><th>標籤位置</th><th>值位置</th><th>方向</th></tr>
+
+
+          <tr>
+            <td>excel_不規則合併_A1</td>
+            <td><strong>複雜格式設備巡檢表</strong></td>
+            <td>text</td>
+            <td>不規則合併/A1</td>
+            <td>不規則合併/A2</td>
+            <td>below</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_A3</td>
+            <td><strong>設備基本資訊</strong></td>
+            <td>text</td>
+            <td>不規則合併/A3</td>
+            <td>不規則合併/D3</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_D3</td>
+            <td><strong>檢查資訊</strong></td>
+            <td>text</td>
+            <td>不規則合併/D3</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_A4</td>
+            <td><strong>名稱/
+編號</strong></td>
+            <td>text</td>
+            <td>不規則合併/A4</td>
+            <td>不規則合併/B4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_D4</td>
+            <td><strong>日期</strong></td>
+            <td>date</td>
+            <td>不規則合併/D4</td>
+            <td>不規則合併/F4</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_D5</td>
+            <td><strong>人員</strong></td>
+            <td>text</td>
+            <td>不規則合併/D5</td>
+            <td>不規則合併/F5</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_E8</td>
+            <td><strong>判定</strong></td>
+            <td>checkbox</td>
+            <td>不規則合併/E8</td>
+            <td>不規則合併/G8</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_C9</td>
+            <td><strong>數值</strong></td>
+            <td>number</td>
+            <td>不規則合併/C9</td>
+            <td>不規則合併/D9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_E9</td>
+            <td><strong>合格</strong></td>
+            <td>checkbox</td>
+            <td>不規則合併/E9</td>
+            <td>不規則合併/G9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_F9</td>
+            <td><strong>不合格</strong></td>
+            <td>checkbox</td>
+            <td>不規則合併/F9</td>
+            <td>不規則合併/G9</td>
+            <td>right</td>
+          </tr>
+
+          <tr>
+            <td>excel_不規則合併_B12</td>
+            <td><strong>溫度</strong></td>
+            <td>number</td>
+            <td>不規則合併/B12</td>
+            <td>不規則合併/C12</td>
+            <td>right</td>
+          </tr>
+</table>
+
+        <div class="section-title">回填結果對照（6 成功 / 0 失敗）</div>
+        <table>
+          <tr>
+            <th>欄位名稱</th>
+            <th>類型</th>
+            <th>位置</th>
+            <th>Before（填入前）</th>
+            <th>After（填入後）</th>
+            <th>預期值</th>
+            <th>結果</th>
+          </tr>
+
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>日期</strong></td>
+            <td>date</td>
+            <td><code>F4</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>2026-04-15</strong></td>
+            <td>2026-04-15</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>人員</strong></td>
+            <td>text</td>
+            <td><code>F5</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>張大明</strong></td>
+            <td>張大明</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>判定</strong></td>
+            <td>checkbox</td>
+            <td><code>G8</code></td>
+            <td class="">標準</td>
+            <td><strong>合格</strong></td>
+            <td>合格</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>合格</strong></td>
+            <td>checkbox</td>
+            <td><code>G9</code></td>
+            <td class="">下限</td>
+            <td><strong>合格</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>不合格</strong></td>
+            <td>checkbox</td>
+            <td><code>G9</code></td>
+            <td class="">下限</td>
+            <td><strong>合格</strong></td>
+            <td>true</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+
+          <tr class="fill-result-row diff-added">
+            <td><strong>溫度</strong></td>
+            <td>number</td>
+            <td><code>C12</code></td>
+            <td class="diff-empty">(空)</td>
+            <td><strong>62.5</strong></td>
+            <td>62.5</td>
+            <td><span class="badge" style="background:#27ae60">✓ 通過</span></td>
+          </tr>
+</table>
+</div></div>
+</div></div>
+
+</div>
+</body>
+</html>

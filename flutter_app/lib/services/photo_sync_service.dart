@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/photo_sync_task.dart';
-import '../models/template_inspection_record.dart';
 import 'database_service.dart';
 import 'connectivity_service.dart';
 import 'gemini_service.dart';

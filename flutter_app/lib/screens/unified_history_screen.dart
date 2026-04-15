@@ -39,11 +39,17 @@ class _UnifiedHistoryScreenState extends State<UnifiedHistoryScreen> {
     super.dispose();
   }
 
+  /// Issue #16: 使用 SQL-side 搜尋，避免載入全部紀錄再在客戶端過濾
   Future<void> _loadRecords() async {
     setState(() => _isLoading = true);
     try {
-      _records = await _dbService.getAllFormRecords();
-      _applyFilter();
+      final query = _searchController.text.trim();
+      if (query.isEmpty) {
+        _records = await _dbService.getAllFormRecords();
+      } else {
+        _records = await _dbService.searchFormRecords(query);
+      }
+      _filteredRecords = List.from(_records);
     } catch (e) {
       debugPrint('載入紀錄失敗: $e');
     }
@@ -51,16 +57,8 @@ class _UnifiedHistoryScreenState extends State<UnifiedHistoryScreen> {
   }
 
   void _applyFilter() {
-    final query = _searchController.text.trim().toLowerCase();
-    if (query.isEmpty) {
-      _filteredRecords = List.from(_records);
-    } else {
-      _filteredRecords = _records.where((r) {
-        return r.title.toLowerCase().contains(query) ||
-            (r.sourceFileName?.toLowerCase().contains(query) ?? false) ||
-            (r.locationName?.toLowerCase().contains(query) ?? false);
-      }).toList();
-    }
+    // Issue #16: 重新從 DB 載入已過濾的結果
+    _loadRecords();
   }
 
   @override

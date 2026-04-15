@@ -526,10 +526,14 @@ class DatabaseService {
   // ==================== Form Inspection Record Operations ====================
 
   /// 儲存表單檢測紀錄（新增或更新）
+  ///
+  /// Issue #17: 不再直接修改傳入的 record 物件，
+  /// 改為在序列化後的 Map 上設定 updatedAt。
   Future<int> saveFormRecord(FormInspectionRecord record) async {
     final db = await database;
-    record.updatedAt = DateTime.now();
     final map = record.toMap();
+    // 永遠以當前時間覆寫 updated_at，不 mutate 原物件
+    map['updated_at'] = DateTime.now().toIso8601String();
 
     if (record.id != null) {
       await db.update(

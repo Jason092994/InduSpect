@@ -110,7 +110,6 @@ class _PhotoFieldInputState extends State<PhotoFieldInput> {
 
   Widget _buildMultiplePhotoInput(BuildContext context) {
     final photos = widget.value != null && widget.value is List ? widget.value : [];
-    final isOnline = _connectivityService.isOnline;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

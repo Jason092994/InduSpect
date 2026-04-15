@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -346,6 +347,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
   // ========== GuidedCapture 整合 ==========
 
+  /// 批次 AI 並行分析上限（Issue #14：避免 OOM）
+  static const int _maxConcurrentAnalysis = 3;
+
   /// 啟動批次引導式拍照
   Future<void> _launchGuidedCapture() async {
     // 將 inspectionItems 轉為 photoTasks 格式
@@ -384,7 +388,10 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
     if (bindings == null || bindings.isEmpty) return;
 
-    // 將結果映射回各項目並觸發 AI 分析
+    // Issue #14: 使用 concurrency limit 控制並行分析數量
+    final futures = <Future<void>>[];
+    int running = 0;
+
     for (final binding in bindings) {
       final index = _inspectionItems.indexWhere((i) => i.fieldId == binding.taskId);
       if (index < 0) continue;
@@ -398,9 +405,20 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         item.isAnalyzing = true;
       });
 
-      // 觸發 AI 分析（不等待，讓多張照片可並行分析）
-      _runAIAnalysis(item, imageBytes, binding.filePath);
+      // 控制並行數量：等待直到有空位
+      if (running >= _maxConcurrentAnalysis) {
+        await Future.any(futures);
+      }
+
+      running++;
+      final future = _runAIAnalysis(item, imageBytes, binding.filePath).whenComplete(() {
+        running--;
+      });
+      futures.add(future);
     }
+
+    // 等待所有分析完成
+    await Future.wait(futures);
   }
 
   // ========== Step 2: 逐項檢測 ==========
@@ -496,14 +514,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         setState(() {
           item.isAnalyzing = false;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('AI 分析失敗: $e\n請嘗試手動填寫'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
+        // Issue #15: 收集錯誤，避免 SnackBar 連續彈出
+        _pendingAnalysisErrors.add(item.label);
+        _debouncedShowAnalysisErrors();
       }
     } else {
       setState(() {
@@ -518,6 +531,28 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         );
       }
     }
+  }
+
+  // Issue #15: 彙整 AI 錯誤訊息，避免 SnackBar 連續彈出
+  final List<String> _pendingAnalysisErrors = [];
+  Timer? _errorDebounceTimer;
+
+  void _debouncedShowAnalysisErrors() {
+    _errorDebounceTimer?.cancel();
+    _errorDebounceTimer = Timer(const Duration(milliseconds: 800), () {
+      if (!mounted || _pendingAnalysisErrors.isEmpty) return;
+      final count = _pendingAnalysisErrors.length;
+      final names = _pendingAnalysisErrors.take(3).join('、');
+      final suffix = count > 3 ? ' 等 $count 項' : '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('AI 分析失敗：$names$suffix\n請嘗試手動填寫'),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      _pendingAnalysisErrors.clear();
+    });
   }
 
   /// 將 AI 分析結果映射到表單欄位
@@ -668,7 +703,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
               );
 
               if (filledBytes != null) {
-                // 儲存到本地暫存（不立即分享）
+                // Issue #18: 使用 app 文件目錄代替 systemTemp，避免被 OS 清除
                 final dir = await Directory.systemTemp.createTemp('induspect_');
                 final outputPath = '${dir.path}/filled_$_fileName';
                 await File(outputPath).writeAsBytes(filledBytes);

@@ -52,23 +52,25 @@ class LocationService {
         timeLimit: const Duration(seconds: 10),
       );
 
-      // 嘗試反向地理編碼取得地名
+      // Issue #19: Web 平台不支援 geocoding，跳過反向地理編碼
       String? locationName;
-      try {
-        final placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude,
-        );
-        if (placemarks.isNotEmpty) {
-          final p = placemarks.first;
-          // 組合地址：區域 + 街道
-          final parts = [p.subAdministrativeArea, p.locality, p.street]
-              .where((s) => s != null && s.isNotEmpty)
-              .toList();
-          locationName = parts.join(' ');
+      if (!kIsWeb) {
+        try {
+          final placemarks = await placemarkFromCoordinates(
+            position.latitude,
+            position.longitude,
+          );
+          if (placemarks.isNotEmpty) {
+            final p = placemarks.first;
+            // 組合地址：區域 + 街道
+            final parts = [p.subAdministrativeArea, p.locality, p.street]
+                .where((s) => s != null && s.isNotEmpty)
+                .toList();
+            locationName = parts.join(' ');
+          }
+        } catch (e) {
+          debugPrint('反向地理編碼失敗: $e');
         }
-      } catch (e) {
-        debugPrint('反向地理編碼失敗: $e');
       }
 
       return LocationData(

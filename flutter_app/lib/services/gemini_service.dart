@@ -332,11 +332,11 @@ $recordsJson
       // 安全地提取回應文本
       String responseText = '';
       try {
-        if (response.candidates != null && response.candidates!.isNotEmpty) {
-          final candidate = response.candidates!.first;
-          if (candidate.content.parts != null && candidate.content.parts!.isNotEmpty) {
-            for (final part in candidate.content.parts!) {
-              if (part is TextPart && part.text != null) {
+        if (response.candidates.isNotEmpty) {
+          final candidate = response.candidates.first;
+          if (candidate.content.parts.isNotEmpty) {
+            for (final part in candidate.content.parts) {
+              if (part is TextPart) {
                 responseText += part.text;
               }
             }
@@ -393,12 +393,12 @@ $recordsJson
       String responseText = '';
       try {
         // 檢查是否有候選回應
-        if (response.candidates != null && response.candidates!.isNotEmpty) {
-          final candidate = response.candidates!.first;
-          if (candidate.content.parts != null && candidate.content.parts!.isNotEmpty) {
+        if (response.candidates.isNotEmpty) {
+          final candidate = response.candidates.first;
+          if (candidate.content.parts.isNotEmpty) {
             // 提取所有文本部分
-            for (final part in candidate.content.parts!) {
-              if (part is TextPart && part.text != null) {
+            for (final part in candidate.content.parts) {
+              if (part is TextPart) {
                 responseText += part.text;
               }
             }
@@ -457,11 +457,11 @@ $recordsJson
       // 安全地提取回應文本
       String responseText = '';
       try {
-        if (response.candidates != null && response.candidates!.isNotEmpty) {
-          final candidate = response.candidates!.first;
-          if (candidate.content.parts != null && candidate.content.parts!.isNotEmpty) {
-            for (final part in candidate.content.parts!) {
-              if (part is TextPart && part.text != null) {
+        if (response.candidates.isNotEmpty) {
+          final candidate = response.candidates.first;
+          if (candidate.content.parts.isNotEmpty) {
+            for (final part in candidate.content.parts) {
+              if (part is TextPart) {
                 responseText += part.text;
               }
             }
@@ -513,11 +513,11 @@ $supplementalPrompt
       // 安全地提取回應文本
       String responseText = '';
       try {
-        if (response.candidates != null && response.candidates!.isNotEmpty) {
-          final candidate = response.candidates!.first;
-          if (candidate.content.parts != null && candidate.content.parts!.isNotEmpty) {
-            for (final part in candidate.content.parts!) {
-              if (part is TextPart && part.text != null) {
+        if (response.candidates.isNotEmpty) {
+          final candidate = response.candidates.first;
+          if (candidate.content.parts.isNotEmpty) {
+            for (final part in candidate.content.parts) {
+              if (part is TextPart) {
                 responseText += part.text;
               }
             }

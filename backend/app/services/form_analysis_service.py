@@ -808,51 +808,73 @@ class FormAnalysisService:
     ) -> Optional[dict]:
         """找到標籤欄位對應的值儲存格"""
         sheet_name = ws.title
+        label_coord = f"{get_column_letter(label_col)}{label_row}"
 
-        for offset in range(1, 4):
-            next_col = label_col + offset
-            if next_col > max_col:
-                break
+        # 計算標籤合併格的右邊界和下邊界，搜尋時要跳過標籤自身範圍
+        label_merge = merge_lookup.get(label_coord)
+        if label_merge:
+            # 從合併範圍的右邊界 + 1 開始搜尋
+            merge_max_col = label_col + label_merge["cols"] - 1
+            merge_max_row = label_row + label_merge["rows"] - 1
+        else:
+            merge_max_col = label_col
+            merge_max_row = label_row
+
+        # 右側搜尋：從合併範圍右邊界 + 1 開始
+        search_start_col = merge_max_col + 1
+        for next_col in range(search_start_col, min(search_start_col + 3, max_col + 1)):
             next_coord = f"{get_column_letter(next_col)}{label_row}"
             next_cell = ws.cell(row=label_row, column=next_col)
+
+            # 如果目標格在合併範圍內，跳到合併範圍的左上角
+            target_merge = merge_lookup.get(next_coord)
+            if target_merge:
+                actual_coord = target_merge["top_left"]
+            else:
+                actual_coord = next_coord
 
             cell_val = next_cell.value
             if cell_val is None or is_placeholder(str(cell_val)):
                 return {
                     "sheet": sheet_name,
-                    "cell": next_coord,
+                    "cell": actual_coord,
                     "row": label_row,
                     "column": next_col,
                     "direction": "right",
-                    "offset": offset,
+                    "offset": next_col - label_col,
                 }
 
             if not is_field_label(str(cell_val)):
                 return {
                     "sheet": sheet_name,
-                    "cell": next_coord,
+                    "cell": actual_coord,
                     "row": label_row,
                     "column": next_col,
                     "direction": "right",
-                    "offset": offset,
+                    "offset": next_col - label_col,
                 }
 
-        for offset in range(1, 3):
-            next_row = label_row + offset
-            if next_row > max_row:
-                break
+        # 下方搜尋：從合併範圍下邊界 + 1 開始
+        search_start_row = merge_max_row + 1
+        for next_row in range(search_start_row, min(search_start_row + 2, max_row + 1)):
             next_coord = f"{get_column_letter(label_col)}{next_row}"
             next_cell = ws.cell(row=next_row, column=label_col)
+
+            target_merge = merge_lookup.get(next_coord)
+            if target_merge:
+                actual_coord = target_merge["top_left"]
+            else:
+                actual_coord = next_coord
 
             cell_val = next_cell.value
             if cell_val is None or is_placeholder(str(cell_val)):
                 return {
                     "sheet": sheet_name,
-                    "cell": next_coord,
+                    "cell": actual_coord,
                     "row": next_row,
                     "column": label_col,
                     "direction": "below",
-                    "offset": offset,
+                    "offset": next_row - label_row,
                 }
 
         return None
@@ -900,7 +922,7 @@ class FormAnalysisService:
                     field_name = text.rstrip(':：_＿ ')
 
                     value_loc = self._find_value_cell_word(
-                        table, row_idx, cell_idx
+                        table, row_idx, cell_idx, table_idx
                     )
 
                     fields.append({
@@ -920,7 +942,7 @@ class FormAnalysisService:
         return fields
 
     def _find_value_cell_word(
-        self, table, label_row: int, label_col: int
+        self, table, label_row: int, label_col: int, table_idx: int = 0
     ) -> Optional[dict]:
         """找到 Word 表格中標籤對應的值儲存格"""
         rows = table.rows
@@ -932,7 +954,7 @@ class FormAnalysisService:
             if not right_text or is_placeholder(right_text):
                 return {
                     "type": "table",
-                    "table_index": None,
+                    "table_index": table_idx,
                     "row_index": label_row,
                     "cell_index": label_col + 1,
                     "direction": "right",
@@ -944,7 +966,7 @@ class FormAnalysisService:
             if not below_text or is_placeholder(below_text):
                 return {
                     "type": "table",
-                    "table_index": None,
+                    "table_index": table_idx,
                     "row_index": label_row + 1,
                     "cell_index": label_col,
                     "direction": "below",
