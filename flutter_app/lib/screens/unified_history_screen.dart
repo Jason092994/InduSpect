@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class UnifiedHistoryScreen extends StatefulWidget {
 class _UnifiedHistoryScreenState extends State<UnifiedHistoryScreen> {
   final DatabaseService _dbService = DatabaseService();
   final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   List<FormInspectionRecord> _records = [];
   List<FormInspectionRecord> _filteredRecords = [];
@@ -35,6 +37,7 @@ class _UnifiedHistoryScreenState extends State<UnifiedHistoryScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -56,9 +59,12 @@ class _UnifiedHistoryScreenState extends State<UnifiedHistoryScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  /// Issue #16: 以 300ms debounce 避免每按一個鍵都查 DB
   void _applyFilter() {
-    // Issue #16: 重新從 DB 載入已過濾的結果
-    _loadRecords();
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      _loadRecords();
+    });
   }
 
   @override

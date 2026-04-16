@@ -1,3 +1,4 @@
+import 'dart:math' show sqrt;
 import 'dart:ui' show Offset;
 
 /// 測量數據模型
@@ -43,7 +44,7 @@ class Measurement {
     if (referenceStart == null || referenceEnd == null) return null;
     final dx = referenceEnd!.dx - referenceStart!.dx;
     final dy = referenceEnd!.dy - referenceStart!.dy;
-    return (dx * dx + dy * dy).sqrt();
+    return sqrt(dx * dx + dy * dy);
   }
 
   /// 計算測量線的像素長度
@@ -51,7 +52,7 @@ class Measurement {
     if (measureStart == null || measureEnd == null) return null;
     final dx = measureEnd!.dx - measureStart!.dx;
     final dy = measureEnd!.dy - measureStart!.dy;
-    return (dx * dx + dy * dy).sqrt();
+    return sqrt(dx * dx + dy * dy);
   }
 
   /// 計算比例係數（真實長度 / 像素長度）
