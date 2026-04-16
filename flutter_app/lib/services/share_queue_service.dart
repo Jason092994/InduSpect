@@ -45,7 +45,7 @@ class ShareQueueService {
 
       for (final record in pendingRecords) {
         try {
-          // 嘗試分享已匯出的檔案
+          // Issue #18: 嘗試分享已匯出的檔案，檔案不存在時跳過（不標記完成）
           if (record.filledDocumentPath != null) {
             final file = File(record.filledDocumentPath!);
             if (await file.exists()) {
@@ -53,12 +53,18 @@ class ShareQueueService {
                 bytes: await file.readAsBytes(),
                 fileName: p.basename(file.path),
               );
+              // 分享成功，標記完成
+              await _dbService.markFormShareComplete(record.recordId);
+              debugPrint('已完成待分享紀錄: ${record.title}');
+            } else {
+              debugPrint('檔案已不存在，跳過分享: ${record.filledDocumentPath}');
+              // 檔案不存在不標記完成，等使用者重新匯出
             }
+          } else {
+            // 無匯出路徑，無法分享，標記完成以避免無限重試
+            await _dbService.markFormShareComplete(record.recordId);
+            debugPrint('紀錄無匯出路徑，跳過: ${record.title}');
           }
-
-          // 標記分享完成
-          await _dbService.markFormShareComplete(record.recordId);
-          debugPrint('已完成待分享紀錄: ${record.title}');
         } catch (e) {
           debugPrint('分享紀錄失敗 (${record.recordId}): $e');
           // 個別失敗不中斷整個佇列

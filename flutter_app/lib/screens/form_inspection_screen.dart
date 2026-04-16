@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/inspection_template.dart';
 import '../models/template_field.dart';
 import '../models/analysis_result.dart';
@@ -704,7 +705,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
               if (filledBytes != null) {
                 // Issue #18: 使用 app 文件目錄代替 systemTemp，避免被 OS 清除
-                final dir = await Directory.systemTemp.createTemp('induspect_');
+                final appDir = await getApplicationDocumentsDirectory();
+                final dir = Directory('${appDir.path}/induspect_exports');
+                if (!await dir.exists()) await dir.create(recursive: true);
                 final outputPath = '${dir.path}/filled_$_fileName';
                 await File(outputPath).writeAsBytes(filledBytes);
                 _exportedFilePath = outputPath;
@@ -778,8 +781,10 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
     final outputName = '${_fileName?.replaceAll(RegExp(r'\.\w+$'), '')}_inspection_result.json';
 
-    // 儲存到本地暫存
-    final dir = await Directory.systemTemp.createTemp('induspect_');
+    // Issue #18: 使用 app 文件目錄，避免被 OS 清除
+    final appDir = await getApplicationDocumentsDirectory();
+    final dir = Directory('${appDir.path}/induspect_exports');
+    if (!await dir.exists()) await dir.create(recursive: true);
     final outputPath = '${dir.path}/$outputName';
     await File(outputPath).writeAsBytes(jsonBytes);
     return outputPath;

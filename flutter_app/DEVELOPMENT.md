@@ -1,6 +1,6 @@
 # Flutter App 開發指南
 
-> **最後更新**: 2026-04-12
+> **最後更新**: 2026-04-16
 
 ---
 
@@ -158,21 +158,21 @@ flutter test test/form_inspection_record_test.dart
 
 ---
 
-## 已知問題（GitHub Issues）
+## 已關閉的 Issues（2026-04-16 全數修復）
 
-| Issue | 標題 | Label |
-|-------|------|-------|
-| #14 | 批次拍照並行 AI 分析需加 concurrency limit | performance |
-| #15 | 多張 AI 分析失敗時 SnackBar 連續彈出 | ux |
-| #16 | 歷史紀錄搜尋應改用 SQL-side search | performance |
-| #17 | saveFormRecord 不應直接 mutate 傳入物件 | code-quality |
-| #18 | 匯出檔案存於 temp 目錄，分享前應檢查存在性 | robustness |
-| #19 | geocoding 在 Web 平台缺少防護 | robustness |
+| Issue | 標題 | Label | 修復摘要 |
+|-------|------|-------|---------|
+| #14 | 批次拍照並行 AI 分析需加 concurrency limit | performance | `_maxConcurrentAnalysis = 3`，用 `Future.any()` 控制 |
+| #15 | 多張 AI 分析失敗時 SnackBar 連續彈出 | ux | 800ms debounce + 合併錯誤通知 |
+| #16 | 歷史紀錄搜尋應改用 SQL-side search | performance | 改用 `searchFormRecords()` SQL LIKE + 300ms debounce |
+| #17 | saveFormRecord 不應直接 mutate 傳入物件 | code-quality | 在 Map 上設定 `updated_at`，不 mutate 原物件 |
+| #18 | 匯出檔案存於 temp 目錄，分享前應檢查存在性 | robustness | 改用 `getApplicationDocumentsDirectory()` + share_queue fallback |
+| #19 | geocoding 在 Web 平台缺少防護 | robustness | 加入 `kIsWeb` 判斷跳過 geocoding |
 
-### 既有 error（非本次引入）
+### 既有 error（已修復）
 
-- `measurement.dart` 第 46/54 行：`sqrt` 未 import `dart:math`
-- `widget_test.dart` 第 16 行：`MyApp` 已不存在（預設模板未更新）
+- ~~`measurement.dart` 第 46/54 行：`sqrt` 未 import `dart:math`~~ → 已加入 `import 'dart:math' show sqrt;` 並改用 `sqrt()` 函式
+- `widget_test.dart`：已更新為使用 `InduSpectApp`
 
 ---
 
@@ -221,5 +221,17 @@ flutter build apk --debug
 
 1. **實機端到端測試**：完整流程 上傳 Excel → 拍照 → AI → 匯出 → 分享
 2. **離線測試**：斷網狀態完成檢測 → 恢復網路 → 確認自動分享
-3. **處理 GitHub Issues #14-#19**
-4. **修正既有 error**：measurement.dart `sqrt`、widget_test.dart `MyApp`
+3. **效能優化**：大量紀錄時的列表滾動效能
+4. **UI 微調**：根據實機測試回饋進行調整
+
+---
+
+## 變更紀錄
+
+### 2026-04-16
+
+- **fix(#18)**: 匯出檔案改用 `getApplicationDocumentsDirectory()` 持久化目錄
+- **fix(#18)**: `share_queue_service.dart` 加入檔案存在性檢查 fallback
+- **fix(#16)**: 歷史紀錄搜尋加入 300ms debounce Timer
+- **fix**: `measurement.dart` 修正 `sqrt` 未 import `dart:math` 的編譯錯誤
+- **chore**: 關閉 GitHub Issues #14-#19，附修復說明留言

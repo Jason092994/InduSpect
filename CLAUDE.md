@@ -35,8 +35,8 @@ flutter test test/form_inspection_record_test.dart test/database_service_test.da
 目前 46 tests，全部通過。DB 測試使用 `sqflite_common_ffi` in-memory。
 
 ## 已知問題追蹤
-GitHub Issues #14-#19（performance / ux / code-quality / robustness）
+GitHub Issues #14-#19 已全數修復並關閉（2026-04-16）
 
-## 既有 error（非近期引入）
-- `measurement.dart`: `sqrt` 未 import `dart:math`
-- `widget_test.dart`: `MyApp` 已不存在
+## 既有 error（已修復）
+- ~~`measurement.dart`: `sqrt` 未 import `dart:math`~~ → 已修復
+- ~~`widget_test.dart`: `MyApp` 已不存在~~ → 已更新為 `InduSpectApp`
