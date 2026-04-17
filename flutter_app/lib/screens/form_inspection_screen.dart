@@ -151,6 +151,14 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // 批次分析進度追蹤
+  bool _isBatchAnalyzing = false;
+  int _batchTotal = 0;
+  int _batchCompleted = 0;
+  int _batchErrors = 0;
+  String _batchCurrentItem = '';
+  bool _autoReportTriggered = false;
+
   @override
   void initState() {
     super.initState();
@@ -361,8 +369,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
       photoTasks.add({
         'task_id': item.fieldId,
         'display_name': item.label,
-        'photo_hint': '拍攝 ${item.label} 的照片',
+        'photo_hint': _getSmartPhotoHint(item.label, item.fieldType),
         'field_name': item.label,
+        'field_type': item.fieldType,
         'sequence': i + 1,
       });
     }
@@ -389,13 +398,25 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
 
     if (bindings == null || bindings.isEmpty) return;
 
+    // 啟動批次分析進度追蹤
+    setState(() {
+      _isBatchAnalyzing = true;
+      _batchTotal = bindings.length;
+      _batchCompleted = 0;
+      _batchErrors = 0;
+      _batchCurrentItem = '';
+    });
+
     // Issue #14: 使用 concurrency limit 控制並行分析數量
     final futures = <Future<void>>[];
     int running = 0;
 
     for (final binding in bindings) {
       final index = _inspectionItems.indexWhere((i) => i.fieldId == binding.taskId);
-      if (index < 0) continue;
+      if (index < 0) {
+        if (mounted) setState(() => _batchCompleted++);
+        continue;
+      }
 
       final item = _inspectionItems[index];
       final imageBytes = binding.photoBytes ?? await File(binding.filePath).readAsBytes();
@@ -404,6 +425,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         item.photoPath = binding.filePath;
         item.photoBytes = imageBytes;
         item.isAnalyzing = true;
+        _batchCurrentItem = item.label;
       });
 
       // 控制並行數量：等待直到有空位
@@ -414,12 +436,81 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
       running++;
       final future = _runAIAnalysis(item, imageBytes, binding.filePath).whenComplete(() {
         running--;
+        if (mounted) {
+          setState(() {
+            _batchCompleted++;
+            if (!item.isCompleted) _batchErrors++;
+          });
+        }
       });
       futures.add(future);
     }
 
     // 等待所有分析完成
     await Future.wait(futures);
+
+    if (mounted) {
+      setState(() => _isBatchAnalyzing = false);
+    }
+  }
+
+  /// 一鍵自動檢測：引導拍照 → 批次 AI 分析 → 自動進入預覽
+  Future<void> _startAutoInspection() async {
+    await _launchGuidedCapture();
+
+    if (_completedCount > 0 && mounted) {
+      setState(() => _currentStep = FormInspectionStep.preview);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('自動檢測完成！已完成 $_completedCount/${_inspectionItems.length} 項，請確認結果'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  /// 根據欄位名稱和類型產生智慧拍照提示
+  String _getSmartPhotoHint(String label, String fieldType) {
+    final lower = label.toLowerCase();
+    if (lower.contains('溫度') || lower.contains('temperature')) {
+      return '請正面拍攝溫度計或溫度顯示器，確保數值清晰可讀';
+    }
+    if (lower.contains('壓力') || lower.contains('pressure')) {
+      return '請正面拍攝壓力錶，確保指針位置和刻度清晰可見';
+    }
+    if (lower.contains('電壓') || lower.contains('voltage') ||
+        lower.contains('電流') || lower.contains('current')) {
+      return '請拍攝電氣儀表面板，確保所有讀數清晰可見';
+    }
+    if (lower.contains('絕緣') || lower.contains('insulation')) {
+      return '請拍攝絕緣電阻測試結果，確保數值和單位清晰';
+    }
+    if (lower.contains('外觀') || lower.contains('appearance')) {
+      return '請拍攝設備整體外觀，注意是否有裂痕、鏽蝕、漏油等異常';
+    }
+    if (lower.contains('漏') || lower.contains('leak') || lower.contains('洩漏')) {
+      return '請拍攝可能滲漏的位置，包含接頭、密封處和地面痕跡';
+    }
+    if (lower.contains('振動') || lower.contains('vibration')) {
+      return '請拍攝振動監測器讀數或設備運轉狀態';
+    }
+    if (lower.contains('油') || lower.contains('oil') || lower.contains('潤滑')) {
+      return '請拍攝油位視窗或油品顏色，確認油位高度';
+    }
+    if (lower.contains('噪音') || lower.contains('noise') || lower.contains('聲音')) {
+      return '請拍攝設備運轉狀態，並在備註中描述異常聲響';
+    }
+    if (lower.contains('鏽') || lower.contains('腐蝕') || lower.contains('corrosion')) {
+      return '請近距離拍攝鏽蝕或腐蝕區域，可放置信用卡作為尺寸參照';
+    }
+    if (fieldType == 'number' || fieldType == 'measurement') {
+      return '請拍攝「$label」的儀表或量測設備，確保讀數清晰';
+    }
+    if (fieldType == 'radio') {
+      return '請拍攝「$label」的實際狀態，AI 將自動判定合格/不合格';
+    }
+    return '請拍攝「$label」的照片，確保光線充足、畫面清晰';
   }
 
   // ========== Step 2: 逐項檢測 ==========
@@ -862,7 +953,76 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
         title: Text(_getAppBarTitle()),
         actions: _buildAppBarActions(),
       ),
-      body: _errorMessage != null ? _buildErrorView() : _buildCurrentStep(),
+      body: Stack(
+        children: [
+          _errorMessage != null ? _buildErrorView() : _buildCurrentStep(),
+          if (_isBatchAnalyzing) _buildBatchAnalysisOverlay(),
+        ],
+      ),
+    );
+  }
+
+  /// 批次分析進度覆蓋層
+  Widget _buildBatchAnalysisOverlay() {
+    final progress = _batchTotal > 0 ? _batchCompleted / _batchTotal : 0.0;
+
+    return Container(
+      color: Colors.black54,
+      child: Center(
+        child: Card(
+          margin: const EdgeInsets.all(32),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.smart_toy, size: 48, color: AppColors.primary),
+                const SizedBox(height: 16),
+                const Text(
+                  'AI 批次分析中',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '正在分析: $_batchCurrentItem',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 12,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$_batchCompleted / $_batchTotal 項完成',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                if (_batchErrors > 0) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_batchErrors 項分析失敗',
+                    style: const TextStyle(fontSize: 13, color: Colors.red),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Text(
+                  '請耐心等待，AI 正在逐項分析照片...',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1038,9 +1198,9 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
                   ),
                   const SizedBox(height: 8),
                   _buildFlowStep('1', '上傳定檢表', '系統自動辨識表單結構'),
-                  _buildFlowStep('2', '逐項拍照檢測', 'AI 自動分析並填入結果'),
+                  _buildFlowStep('2', '逐項拍照檢測', '一鍵自動或逐項拍照 → AI 自動分析'),
                   _buildFlowStep('3', '預覽確認', '確認所有檢測結果'),
-                  _buildFlowStep('4', '產生報告', '匯出填好的定檢表'),
+                  _buildFlowStep('4', '產生報告', '自動匯出定檢表與 AI 總結報告'),
                 ],
               ),
             ),
@@ -1419,17 +1579,28 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
             ),
           if (_mode == InspectionMode.manual) const SizedBox(width: 12),
 
-          // 批次拍照按鈕（拍照模式時顯示）
+          // 自動檢測 + 批次拍照按鈕（拍照模式時顯示）
           if (_mode == InspectionMode.photo) ...[
-            OutlinedButton.icon(
-              onPressed: _launchGuidedCapture,
-              icon: const Icon(Icons.burst_mode, size: 18),
-              label: const Text('批次拍照'),
-              style: OutlinedButton.styleFrom(
+            ElevatedButton.icon(
+              onPressed: _isBatchAnalyzing ? null : _startAutoInspection,
+              icon: const Icon(Icons.auto_fix_high, size: 18),
+              label: const Text('自動檢測'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
+            OutlinedButton.icon(
+              onPressed: _isBatchAnalyzing ? null : _launchGuidedCapture,
+              icon: const Icon(Icons.burst_mode, size: 18),
+              label: const Text('批次'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+              ),
+            ),
+            const SizedBox(width: 4),
           ],
 
           // 預覽/完成按鈕
@@ -1534,7 +1705,11 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    setState(() => _currentStep = FormInspectionStep.inspecting);
+                    setState(() {
+                      _currentStep = FormInspectionStep.inspecting;
+                      _autoReportTriggered = false;
+                      _summaryReport = null;
+                    });
                   },
                   icon: const Icon(Icons.arrow_back),
                   label: const Text('返回修改'),
@@ -1573,6 +1748,14 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
   // ========== Step 4 UI: 完成 ==========
 
   Widget _buildDoneView() {
+    // 自動產生 AI 報告（首次進入時觸發）
+    if (!_autoReportTriggered && _summaryReport == null && !_isGeneratingReport) {
+      _autoReportTriggered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _generateSummaryReport();
+      });
+    }
+
     final completed = _inspectionItems.where((i) => i.isCompleted).toList();
     final anomalyCount = completed.where((i) => i.aiResult?['is_anomaly'] == true).length;
     final normalCount = completed.length - anomalyCount;
@@ -1617,23 +1800,8 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 產生報告按鈕
-                if (_summaryReport == null && !_isGeneratingReport)
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _generateSummaryReport,
-                      icon: const Icon(Icons.auto_awesome, color: Colors.amber),
-                      label: const Text('產生 AI 總結報告'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Colors.amber, width: 1.5),
-                      ),
-                    ),
-                  ),
-
-                // 正在產生報告
-                if (_isGeneratingReport)
+                // 自動產生報告中
+                if (_summaryReport == null)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32),
@@ -1641,7 +1809,7 @@ class _FormInspectionScreenState extends State<FormInspectionScreen> {
                         children: [
                           CircularProgressIndicator(),
                           SizedBox(height: 16),
-                          Text('AI 正在分析並產生總結報告...'),
+                          Text('AI 正在自動產生總結報告...'),
                         ],
                       ),
                     ),

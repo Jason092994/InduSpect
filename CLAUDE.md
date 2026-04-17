@@ -4,7 +4,7 @@
 工業設備智慧巡檢系統，Flutter 行動 App + FastAPI 後端 + Gemini AI。
 
 ## 核心功能（僅兩個）
-1. **完整檢測 Pipeline**：上傳定檢表 → 引導拍照 → AI 分析 → 自動回填 → AI 摘要 → 分享（離線暫存）
+1. **完整檢測 Pipeline**：上傳定檢表 → 一鍵自動檢測（引導拍照 → AI 批次分析 → 自動回填 → 自動 AI 報告）→ 分享（離線暫存）
 2. **歷史紀錄**：GPS 定位、可編輯標題、搜尋、重新分享
 
 其餘功能（快速分析、範本系統、設備管理、雲端同步等）目前為隱藏狀態，非核心開發重點。
@@ -35,7 +35,8 @@ flutter test test/form_inspection_record_test.dart test/database_service_test.da
 目前 46 tests，全部通過。DB 測試使用 `sqflite_common_ffi` in-memory。
 
 ## 已知問題追蹤
-GitHub Issues #14-#19 已全數修復並關閉（2026-04-16）
+- GitHub Issues #14-#19 已全數修復並關閉（2026-04-16）
+- GitHub Issues #27-#28 自動化 AI 定檢功能增強（2026-04-17）
 
 ## 既有 error（已修復）
 - ~~`measurement.dart`: `sqrt` 未 import `dart:math`~~ → 已修復
